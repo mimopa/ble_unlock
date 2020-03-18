@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "777386524604",
+    "firebase_url": "https://ble-unlock.firebaseio.com",
+    "project_id": "ble-unlock",
+    "storage_bucket": "ble-unlock.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:777386524604:android:b030fb36620b26a269f5b9",
+        "android_client_info": {
+          "package_name": "com.example.ble_unlock"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "777386524604-g73qcqgt0f68ncmm1joouflntq6ame59.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.ble_unlock",
+            "certificate_hash": "17a13ce76011962bbfe6adee32ec354a52cefccf"
+          }
+        },
+        {
+          "client_id": "777386524604-nkvlvmi7at23gufk8g3152btjui358bn.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD7QOPV1mjHBpcCEDIBHtD3V2IbJqw0uFE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "777386524604-nkvlvmi7at23gufk8g3152btjui358bn.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "777386524604-h4m263mtl17bmejqorr35f1jbujstms8.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.bleUnlock"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
