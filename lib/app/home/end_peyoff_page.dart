@@ -25,10 +25,10 @@ class EndPayOffPage extends StatelessWidget {
       final auth = Provider.of<AuthBase>(context);
       await auth.signOut();
       // print(device.state);
-      if (device.state == BluetoothDeviceState.connected) {
-        await device.disconnect();
-      }
-
+      // if (device.state == BluetoothDeviceState.connected) {
+      //   await device.disconnect();
+      // }
+      await device.disconnect();
       Navigator.of(context).push(
         MaterialPageRoute(
           builder: (context) {
@@ -44,7 +44,7 @@ class EndPayOffPage extends StatelessWidget {
   Future<void> _confirmSignOut(BuildContext context) async {
     final didRequestSignOut = await PlatformAlertDialog(
       title: 'Logout',
-      content: 'Are you sure that you want to logout?',
+      content: 'ログアウトしてもよろしいですか？',
       cancelActionText: 'Cancel',
       defaultActionText: 'Logout',
     ).show(context);

@@ -24,7 +24,7 @@ class SignOutModule {
   Future<void> confirmSignOut(BuildContext context) async {
     final didRequestSignOut = await PlatformAlertDialog(
       title: 'Logout',
-      content: 'Are you sure that you want to logout?',
+      content: 'ログアウトしてもよろしいですか？',
       cancelActionText: 'Cancel',
       defaultActionText: 'Logout',
     ).show(context);

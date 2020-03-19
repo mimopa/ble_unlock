@@ -264,8 +264,10 @@ Widget _buldContents(
                                       }
                                       // return keyDeviceList.toList();
                                     });
-                                    print(r.device.id.id);
-
+                                    if (r.device.name == 'REL-BLE') {
+                                      print(r.device.id.id);
+                                      print(r.device.name);
+                                    }
                                     return DropdownMenuItem<BluetoothDevice>(
                                       value: r.device,
                                       child: Text(

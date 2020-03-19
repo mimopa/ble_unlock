@@ -235,43 +235,85 @@ class CharacteristicTile extends StatelessWidget {
                   // 解錠コードをここで作成して送る！
                   var encoded = ascii.encode(openKey);
                   print(encoded);
-                  encoded.asMap().forEach((index, value) {
-                    print('0x${value.toRadixString(16)}, $index');
-                    writeData.add(int.parse('0x${value.toRadixString(16)}'));
-                  });
+                  // encoded.asMap().forEach((index, value) {
+                  //   print('0x${value.toRadixString(16)}, $index');
+                  //   writeData.add(int.parse('0x${value.toRadixString(16)}'));
+                  // });
+                  print(openKey.substring(0, 2));
+                  int openKey1 = int.parse('0x${openKey.substring(0, 2)}');
+                  int openKey2 = int.parse('0x${openKey.substring(3, 5)}');
+                  int openKey3 = int.parse('0x${openKey.substring(5, 7)}');
+                  int openKey4 = int.parse('0x${openKey.substring(8, 11)}');
+                  int openKey5 = int.parse('0x${openKey.substring(11, 14)}');
+                  int openKey6 = int.parse('0x${openKey.substring(15)}');
+
+                  print('0x41');
+                  print(0x41);
+                  print('openKey3');
+                  print(openKey3);
+                  // Hexで送る:30 -> 0
+                  // 41 04 04 04 04 04 04 51
+                  writeData.add(int.parse('0x${openKey.substring(0, 2)}'));
+                  // writeData.add(0x41);
+                  writeData.add(int.parse('0x${openKey.substring(2, 5)}'));
+                  writeData.add(int.parse('0x${openKey.substring(4, 7)}'));
+                  writeData.add(int.parse('0x${openKey.substring(6, 9)}'));
+                  writeData.add(int.parse('0x${openKey.substring(8, 11)}'));
+                  writeData.add(int.parse('0x${openKey.substring(10, 13)}'));
+                  writeData.add(int.parse('0x${openKey.substring(12, 15)}'));
+                  writeData.add(int.parse('0x${openKey.substring(14)}'));
                   print(writeData);
                   // ★★★★★★★★★★★ 暫定対応 ★★★★★★★★★★★
                   switch (keyId) {
                     case '001':
-                      List<int> _writeData = List<int>.generate(6, (i) {
-                        // print('0x${01.toRadixString(16)}, $i');
-                        return int.parse('0x${01.toRadixString(16)}');
-                      });
+                      List<int> _writeData = [];
+                      _writeData.add(0x41);
+                      _writeData.add(0x01);
+                      _writeData.add(0x01);
+                      _writeData.add(0x01);
+                      _writeData.add(0x01);
+                      _writeData.add(0x01);
+                      _writeData.add(0x01);
+                      _writeData.add(0x51);
+
                       print(_writeData);
                       await characteristic.write(_writeData,
-                          withoutResponse: true);
+                          withoutResponse: false);
                       break;
                     case '002':
-                      List<int> _writeData = List<int>.generate(6, (i) {
-                        // print('0x${02.toRadixString(16)}, $i');
-                        return int.parse('0x${02.toRadixString(16)}');
-                      });
+                      List<int> _writeData = [];
+                      print(_writeData);
+                      _writeData.add(0x41);
+                      _writeData.add(0x02);
+                      _writeData.add(0x02);
+                      _writeData.add(0x02);
+                      _writeData.add(0x02);
+                      _writeData.add(0x02);
+                      _writeData.add(0x02);
+                      _writeData.add(0x51);
+
                       print(_writeData);
                       await characteristic.write(_writeData,
-                          withoutResponse: true);
+                          withoutResponse: false);
                       break;
                     case '003':
-                      List<int> _writeData = List<int>.generate(6, (i) {
-                        // print('0x${03.toRadixString(16)}, $i');
-                        return int.parse('0x${03.toRadixString(16)}');
-                      });
+                      List<int> _writeData = [];
+                      _writeData.add(0x41);
+                      _writeData.add(0x03);
+                      _writeData.add(0x03);
+                      _writeData.add(0x03);
+                      _writeData.add(0x03);
+                      _writeData.add(0x03);
+                      _writeData.add(0x03);
+                      _writeData.add(0x51);
                       print(_writeData);
+
                       await characteristic.write(_writeData,
-                          withoutResponse: true);
+                          withoutResponse: false);
                       break;
-                    default:
-                      await characteristic.write(writeData,
-                          withoutResponse: true);
+                    // default:
+                    //   await characteristic.write(writeData,
+                    //       withoutResponse: true);
                   }
                 },
               ),
