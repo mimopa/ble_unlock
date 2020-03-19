@@ -1,4 +1,5 @@
 import 'package:ble_unlock/app/sign_in/sign_out.dart';
+import 'package:ble_unlock/landing_page.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -211,23 +212,34 @@ class StartConfirmPage extends StatelessWidget {
                 showDialog(
                     context: context,
                     // return object of type AlertDialog
-                    child: new CupertinoAlertDialog(
-                      title: new Column(
+                    child: CupertinoAlertDialog(
+                      title: Column(
                         children: <Widget>[
-                          new Text("CupertinoAlertDialog"),
-                          new Icon(
+                          Text(
+                            "ご利用ありがとうございます！",
+                            style: TextStyle(
+                                fontSize: 15, fontWeight: FontWeight.bold),
+                          ),
+                          Icon(
                             Icons.favorite,
                             color: Colors.red,
                           ),
                         ],
                       ),
-                      content: new Text("利用開始しました！"),
+                      content: new Text("利用を開始しました。"),
                       actions: <Widget>[
-                        new FlatButton(
-                            onPressed: () {
-                              Navigator.of(context).pop();
-                            },
-                            child: new Text("OK"))
+                        FlatButton(
+                          onPressed: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (context) {
+                                  return LandingPage();
+                                },
+                              ),
+                            );
+                          },
+                          child: new Text("OK"),
+                        ),
                       ],
                     ));
               },

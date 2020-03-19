@@ -86,6 +86,17 @@ Widget _buldContents(
   String openKey,
   String keyId,
 ) {
+  print('payoff_comfirm');
+  print(keyId);
+  var textSpan = TextSpan(
+    // TODO:駐輪機Noに変更する必要がある。
+    // text: device.name,
+    text: keyId,
+    style: TextStyle(
+      fontSize: 30,
+      fontWeight: FontWeight.bold,
+    ),
+  );
   return SingleChildScrollView(
     child: Container(
       padding: EdgeInsets.all(10.0),
@@ -156,15 +167,7 @@ Widget _buldContents(
                         style: TextStyle(fontSize: 15, color: Colors.black),
                         children: [
                           TextSpan(text: '駐輪キーNo '),
-                          TextSpan(
-                            // TODO:駐輪機Noに変更する必要がある。
-                            text: device.name,
-                            // text: keyId,
-                            style: TextStyle(
-                              fontSize: 30,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
+                          textSpan,
                         ]),
                   ),
                 ),
@@ -313,6 +316,7 @@ Widget _buldContents(
                               return EndPayOffPage(
                                 device: device,
                                 openKey: openKey,
+                                keyId: keyId,
                               );
                             },
                           ),

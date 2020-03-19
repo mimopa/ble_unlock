@@ -13,10 +13,12 @@ class EndPayOffPage extends StatelessWidget {
     Key key,
     this.device,
     this.openKey,
+    this.keyId,
   }) : super(key: key);
 
   final BluetoothDevice device;
   final String openKey;
+  final String keyId;
 
   Future<void> _signOut(BuildContext context) async {
     try {
@@ -133,6 +135,7 @@ class EndPayOffPage extends StatelessWidget {
                         )
                         .toList(),
                     openKey: openKey,
+                    keyId: keyId,
                   ),
                 )
                 .toList(),
@@ -167,6 +170,7 @@ class EndPayOffPage extends StatelessWidget {
           _confirmCheckOut,
           _buildServiceTiles,
           openKey,
+          keyId,
         ),
       ),
     );
@@ -179,6 +183,7 @@ Widget _buldContents(
   Function confirmCheckOut,
   Function _buildServiceTiles,
   String openKey,
+  String keyId,
 ) {
   return SingleChildScrollView(
     child: Container(
@@ -251,7 +256,7 @@ Widget _buldContents(
                         children: [
                           TextSpan(text: '駐輪キーNo '),
                           TextSpan(
-                            text: device.name,
+                            text: keyId,
                             style: TextStyle(
                               fontSize: 30,
                               fontWeight: FontWeight.bold,

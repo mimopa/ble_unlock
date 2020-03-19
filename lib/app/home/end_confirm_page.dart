@@ -18,6 +18,7 @@ class _EndConfirmPageState extends State<EndConfirmPage> {
   List<Map<String, String>> _keyIds = [];
   // String openKey;
   BluetoothDevice _connectedDevice;
+  String _keyId;
 
   StreamController<List<Map<String, String>>> _controller =
       StreamController<List<Map<String, String>>>.broadcast();
@@ -34,9 +35,22 @@ class _EndConfirmPageState extends State<EndConfirmPage> {
     });
   }
 
-  void _changeDevices(BluetoothDevice device) {
+  void _changeDevices(
+      BluetoothDevice device, List<Map<String, String>> keyIds) {
     setState(() {
       _connectedDevice = device;
+      // _keyId = keyId;
+      keyIds.asMap().forEach((index, keymap) {
+        if (keymap.values.toList().indexOf(device.id.toString()) >= 0) {
+          if (device.id.toString() == keymap['bd_id']) {
+            // print('Stream!');
+            // print(r.device.id);
+            // print(keymap['bd_id']);
+            _keyId = keymap['key_id'];
+          }
+        }
+      });
+      print(_keyId);
     });
   }
 
@@ -98,6 +112,7 @@ class _EndConfirmPageState extends State<EndConfirmPage> {
                   _connectedDevice,
                   _changeDevices,
                   _keyIds,
+                  _keyId,
                   // _controller,
                   // openKey,
                 ),
@@ -149,10 +164,11 @@ Widget _buldContents(
   BluetoothDevice connectedDevice,
   Function changeDevices,
   List<Map<String, String>> keyIds,
+  String selectedKey,
   // StreamController<List<Map<String, String>>> controller,
 ) {
   String openKey;
-  // String keyName = '';
+  String keyName = '';
   List keyList = [];
   List<String> keyDeviceList = [];
   return SingleChildScrollView(
@@ -222,12 +238,12 @@ Widget _buldContents(
                                 DropdownButton<BluetoothDevice>(
                               value: null,
                               onChanged: (BluetoothDevice device) {
-                                changeDevices(device);
+                                changeDevices(device, keyIds);
                               },
                               // このmapのあとに、device.idから、駐輪機Noを取得する処理を行う。
                               items: snapshot.data
                                   .map<DropdownMenuItem<BluetoothDevice>>((r) {
-                                    String keyName = '';
+                                    // keyName = '';
                                     // print('絞り込み');
                                     // print(r.device.id);
                                     keyIds.asMap().forEach((index, keymap) {
@@ -248,15 +264,8 @@ Widget _buldContents(
                                       }
                                       // return keyDeviceList.toList();
                                     });
-                                    // print(keyName);
                                     print(r.device.id.id);
-                                    // var guid = new Guid(r.device.id.toString());
-                                    // var guid2 =
-                                    //     new Guid.fromMac("38:f9:d3:2b:90:90");
-                                    // print(guid.toMac());
-                                    // print(guid2.toByteArray());
-                                    // print(guid2.toString());
-                                    // print(r.device.name);
+
                                     return DropdownMenuItem<BluetoothDevice>(
                                       value: r.device,
                                       child: Text(
@@ -452,7 +461,7 @@ Widget _buldContents(
                       children: [
                         TextSpan(text: '解錠してまった場合の'),
                         TextSpan(
-                          text: '��返金の対応は致しかねます。',
+                          text: '返金の対応は致しかねます。',
                           style: TextStyle(fontSize: 13, color: Colors.red),
                         ),
                       ]),
@@ -480,17 +489,14 @@ Widget _buldContents(
                   defaultActionText: 'OK',
                 ).show(context);
               } else {
-                // 決済���面へ
+                // 決済画面へ
                 Navigator.of(context).push(
                   MaterialPageRoute(
                     builder: (context) {
                       return PayOffComfirmPage(
                         device: connectedDevice,
                         openKey: openKey,
-                        // keyId: keyDeviceList.where((key) {
-                        //   key == connectedDevice.id.toString();
-                        // }).toString(),
-                        // keyId: connectedDevice.id.toString(),
+                        keyId: selectedKey,
                       );
                     },
                   ),

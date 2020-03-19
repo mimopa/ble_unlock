@@ -164,6 +164,7 @@ class CharacteristicTile extends StatelessWidget {
   final VoidCallback onWritePressed;
   final VoidCallback onNotificationPressed;
   final String openKey;
+  final String keyId;
 
   const CharacteristicTile({
     Key key,
@@ -173,14 +174,14 @@ class CharacteristicTile extends StatelessWidget {
     this.onWritePressed,
     this.onNotificationPressed,
     this.openKey,
+    // 暫定対応として、keyIdを受け取り、keyIdごとの解錠コードをハードコーディングで凌ぐ！
+    this.keyId,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<List<int>>(
       // デバイスとの送受信データ（変更があれば反映される）
-      // 解錠完了通知がきた場合、こちらでポップアップ画面を表示させたいが、
-      // 状態を管理（監視）したい場合は、どうしたらよいか？
       stream: characteristic.value,
       initialData: characteristic.lastValue,
       builder: (c, snapshot) {
@@ -232,19 +233,46 @@ class CharacteristicTile extends StatelessWidget {
 
                   List<int> writeData = [];
                   // 解錠コードをここで作成して送る！
-                  // var encoded = ascii.encode("AQ");
                   var encoded = ascii.encode(openKey);
                   print(encoded);
                   encoded.asMap().forEach((index, value) {
                     print('0x${value.toRadixString(16)}, $index');
-                    // writeData[index] =
-                    //     int.parse('0x${value.toRadixString(16)}');
                     writeData.add(int.parse('0x${value.toRadixString(16)}'));
                   });
-
                   print(writeData);
-                  // print(openKey);
-                  await characteristic.write(writeData, withoutResponse: true);
+                  // ★★★★★★★★★★★ 暫定対応 ★★★★★★★★★★★
+                  switch (keyId) {
+                    case '001':
+                      List<int> _writeData = List<int>.generate(6, (i) {
+                        // print('0x${01.toRadixString(16)}, $i');
+                        return int.parse('0x${01.toRadixString(16)}');
+                      });
+                      print(_writeData);
+                      await characteristic.write(_writeData,
+                          withoutResponse: true);
+                      break;
+                    case '002':
+                      List<int> _writeData = List<int>.generate(6, (i) {
+                        // print('0x${02.toRadixString(16)}, $i');
+                        return int.parse('0x${02.toRadixString(16)}');
+                      });
+                      print(_writeData);
+                      await characteristic.write(_writeData,
+                          withoutResponse: true);
+                      break;
+                    case '003':
+                      List<int> _writeData = List<int>.generate(6, (i) {
+                        // print('0x${03.toRadixString(16)}, $i');
+                        return int.parse('0x${03.toRadixString(16)}');
+                      });
+                      print(_writeData);
+                      await characteristic.write(_writeData,
+                          withoutResponse: true);
+                      break;
+                    default:
+                      await characteristic.write(writeData,
+                          withoutResponse: true);
+                  }
                 },
               ),
               // 更新（Notify用のボタン）
