@@ -1,7 +1,9 @@
 import 'package:ble_unlock/app/home/start_confirm_page.dart';
 import 'package:ble_unlock/app/sign_in/sign_out.dart';
+import 'package:ble_unlock/services/database.dart';
 import 'package:flutter/material.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
+import 'package:provider/provider.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -9,27 +11,27 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  // 駐輪場選択
-  String _defaultValue = '001';
+  // 駐輪場選択:park_id
+  String _parkDefaultValue = '001';
   final List<String> _list = <String>['001', '002', '003', '004'];
-  String _text = '';
-  // 駐輪機選択
+  // 駐輪機選択:key_id
   String _keyDefaultValue = '001';
   final List<String> _keyList = <String>['001', '002', '003', '004'];
 
   // パスコード
   String currentPassCode = "";
 
+  // パスコード確認
+  String currentConfirmPassCode = "";
+
   void _handleChange(String newValue) {
     setState(() {
-      _text = newValue;
-      _defaultValue = newValue;
+      _parkDefaultValue = newValue;
     });
   }
 
   void _handleKeyChange(String newKeyValue) {
     setState(() {
-      // _text = newValue;
       _keyDefaultValue = newKeyValue;
     });
   }
@@ -38,6 +40,14 @@ class _HomePageState extends State<HomePage> {
     setState(() {
       currentPassCode = newPassCode;
       print(currentPassCode);
+    });
+  }
+
+  // パスコードの確認
+  void _passCodeConfirmChange(String newPassCode) {
+    setState(() {
+      currentConfirmPassCode = newPassCode;
+      print(currentConfirmPassCode);
     });
   }
 
@@ -65,29 +75,33 @@ class _HomePageState extends State<HomePage> {
         backgroundColor: Colors.white,
         body: _buldContents(
             context,
-            _defaultValue,
+            _parkDefaultValue,
             _list,
             _keyDefaultValue,
             _keyList,
             currentPassCode,
             _handleChange,
             _handleKeyChange,
-            _passCodeChange),
+            _passCodeChange,
+            _passCodeConfirmChange),
       ),
     );
   }
 }
 
 Widget _buldContents(
-    BuildContext context,
-    String defaultValue,
-    List<String> list,
-    String keyDefaultValue,
-    List<String> keyList,
-    String currentPassCode,
-    Function onChanged,
-    Function handleKeyChange,
-    Function passCodeChanged) {
+  BuildContext context,
+  String parkDefaultValue,
+  List<String> list,
+  String keyDefaultValue,
+  List<String> keyList,
+  String currentPassCode,
+  Function onChanged,
+  Function handleKeyChange,
+  Function passCodeChange,
+  Function passCodeConfirmChange,
+) {
+  final database = Provider.of<Database>(context);
   return SingleChildScrollView(
     child: Container(
       padding: EdgeInsets.all(8.0),
@@ -117,7 +131,7 @@ Widget _buldContents(
                 ),
                 SizedBox(width: 30),
                 DropdownButton<String>(
-                  value: defaultValue,
+                  value: parkDefaultValue,
                   onChanged: onChanged,
                   items: list.map<DropdownMenuItem<String>>((String value) {
                     return DropdownMenuItem<String>(
@@ -137,7 +151,7 @@ Widget _buldContents(
                 Text('ー'),
                 SizedBox(width: 10),
                 DropdownButton<String>(
-                  value: defaultValue,
+                  value: parkDefaultValue,
                   onChanged: onChanged,
                   items: list.map<DropdownMenuItem<String>>((String value) {
                     return DropdownMenuItem<String>(
@@ -242,7 +256,7 @@ Widget _buldContents(
                   fieldHeight: 40,
                   fieldWidth: 30,
                   inactiveColor: Colors.grey,
-                  onChanged: (value) => passCodeChanged(value),
+                  onChanged: (value) => passCodeChange(value),
                 )),
           ]),
           Text(
@@ -278,7 +292,7 @@ Widget _buldContents(
                   fieldHeight: 40,
                   fieldWidth: 30,
                   inactiveColor: Colors.grey,
-                  onChanged: (value) => passCodeChanged(value),
+                  onChanged: (value) => passCodeConfirmChange(value),
                 )),
           ]),
           SizedBox(height: 100),
@@ -294,8 +308,12 @@ Widget _buldContents(
               Navigator.of(context).push(
                 MaterialPageRoute(
                   builder: (context) {
-                    return StartConfirmPage(
-                      keyDefaultValue: keyDefaultValue,
+                    return Provider<Database>.value(
+                      value: database,
+                      child: StartConfirmPage(
+                        parkDefaultValue: parkDefaultValue,
+                        keyDefaultValue: keyDefaultValue,
+                      ),
                     );
                   },
                 ),

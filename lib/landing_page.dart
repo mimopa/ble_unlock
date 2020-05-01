@@ -15,11 +15,10 @@ class LandingPage extends StatelessWidget {
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.active) {
             User user = snapshot.data;
-            // print(user.uid);
             if (user == null) {
               return SignInPage.create(context);
             }
-            // return MenuPage();
+            // user.uidを持ち回る方法を検討する。
             return Provider<User>.value(
               value: user,
               child: Provider<Database>(
@@ -27,10 +26,6 @@ class LandingPage extends StatelessWidget {
                 child: MenuPage(),
               ),
             );
-            // return Provider<Database>(
-            //   create: (_) => FirestoreDatabase(uid: user.uid),
-            //   child: MenuPage(),
-            // );
           } else {
             return Scaffold(
               body: Center(

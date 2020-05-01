@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:ble_unlock/app/home/models/entry.dart';
 import 'package:ble_unlock/app/home/models/parking.dart';
 import 'package:ble_unlock/services/api_path.dart';
 import 'package:ble_unlock/services/firestore_service.dart';
@@ -10,6 +11,9 @@ abstract class Database {
   Stream<Parking> parkingStream({@required String bdId});
   Future<Parking> getParking(String parkId, String bdId);
   Future<List<Parking>> getParkings(String parkId);
+  Future<void> setEntry(Entry entry);
+  Future<Entry> getEntry();
+  Future<void> deleteEntry(Entry entry);
 }
 
 String documentIdFromCurrentDate() => DateTime.now().toIso8601String();
@@ -30,7 +34,6 @@ class FirestoreDatabase implements Database {
 
   @override
   Future<void> setParking(Parking parking) {
-    // TODO: implement setParking
     throw UnimplementedError();
   }
 
@@ -40,7 +43,6 @@ class FirestoreDatabase implements Database {
         .then((doc) {
       return doc.data;
     });
-    // Parking parkingInfo = Parking.fromMap(docdata, bdId);
     return Parking.fromMap(docdata, parkId);
   }
 
@@ -48,20 +50,34 @@ class FirestoreDatabase implements Database {
   Future<List<Parking>> getParkings(String parkId) async {
     List keyList = [];
     List<Parking> parkings = [];
+    // parkIdは不要
     await _service.getList(path: APIPath.parkings(parkId)).then((docs) {
       docs.forEach((doc) {
-        // パラメータに該当するドキュメントのみ取得している
-        // if (doc.documentID == parkId) {
-        //   // print('database!');
-        //   // print(doc.data);
-        //   // print(doc.documentID);
-        //   keyList.add(doc.data['key_id']);
-        //   parkings.add(Parking.fromMap(doc.data, parkId));
-        // }
         keyList.add(doc.data['key_id']);
         parkings.add(Parking.fromMap(doc.data, parkId));
       });
     });
     return parkings;
+  }
+
+  @override
+  Future<void> setEntry(Entry entry) async =>
+      await _service.setData(path: APIPath.entry(uid), data: entry.toMap());
+
+  // 利用エントリーの削除：簡易的にユーザー単位で削除か
+  @override
+  Future<void> deleteEntry(Entry entry) async =>
+      await _service.deleteData(path: APIPath.entry(uid));
+
+  // 利用エントリーの取得：既に利用しているエントリーの存在チェック用
+  @override
+  Future<Entry> getEntry() async {
+    print(uid);
+    Map<String, dynamic> docdata = await _service
+        .getData(path: APIPath.entry(uid), documentID: uid)
+        .then((doc) {
+      return doc.data;
+    });
+    return Entry.fromMap(docdata, uid);
   }
 }

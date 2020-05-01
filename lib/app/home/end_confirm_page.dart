@@ -63,7 +63,6 @@ class _EndConfirmPageState extends State<EndConfirmPage> {
   @override
   void dispose() {
     super.dispose();
-    // print("dispose");
   }
 
   Future _setKeys(Database database) async {
@@ -250,12 +249,13 @@ Widget _buldContents(
                                       if (keymap.values.toList().indexOf(
                                               r.device.id.toString()) >=
                                           0) {
-                                        if (r.device.id.toString() ==
-                                            keymap['bd_id']) {
-                                          // print('Stream!');
-                                          // print(r.device.id);
-                                          // print(keymap['bd_id']);
-                                        }
+                                        // if (r.device.id.toString() ==
+                                        //     keymap['bd_id']) {
+                                        //   print('Stream!');
+                                        //   print(r.device.id);
+                                        //   print(r.device.name);
+                                        //   print(keymap['bd_id']);
+                                        // }
                                         keyName = keymap['key_id'];
                                         openKey = keymap['open_key'];
                                         keyList.add(keyName);
@@ -264,7 +264,7 @@ Widget _buldContents(
                                       }
                                       // return keyDeviceList.toList();
                                     });
-                                    if (r.device.name == 'REL-BLE') {
+                                    if (r.device.name == 'Renesas-BLE') {
                                       print(r.device.id.id);
                                       print(r.device.name);
                                     }

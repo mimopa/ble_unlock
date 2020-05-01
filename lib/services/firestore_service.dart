@@ -27,11 +27,9 @@ class FirestoreService {
   Future<List<DocumentSnapshot>> getList({
     @required String path,
   }) async {
-    // print('firestore!');
-    // print(path);
     final snapshot = await Firestore.instance.collection(path).getDocuments();
     final list = snapshot.documents;
-    print(list);
+    // print(list);
     return list;
   }
 

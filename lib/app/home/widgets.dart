@@ -182,6 +182,8 @@ class CharacteristicTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return StreamBuilder<List<int>>(
       // デバイスとの送受信データ（変更があれば反映される）
+      // 受信データは<List<int>>
+      // 支払い後のBLEデータ送受信UIを変更するならば、ここ
       stream: characteristic.value,
       initialData: characteristic.lastValue,
       builder: (c, snapshot) {
@@ -191,6 +193,9 @@ class CharacteristicTile extends StatelessWidget {
             print('解錠したよ！');
           }
         }
+        value.asMap().forEach((key, value) {
+          print(value);
+        });
         return ExpansionTile(
           title: ListTile(
             title: Column(
@@ -202,30 +207,46 @@ class CharacteristicTile extends StatelessWidget {
                     '0x${characteristic.uuid.toString().toUpperCase().substring(4, 8)}',
                     style: Theme.of(context).textTheme.body1.copyWith(
                         color: Theme.of(context).textTheme.caption.color)),
-                Text((ascii.decode(value.toList()).toString() == 'U')
-                    ? '解錠したよ！'
-                    : ''),
+                Text(
+                  (ascii.decode(value.toList()).toString() == 'U')
+                      ? '解錠したよ！'
+                      : ascii.decode(value.toList()).toString(),
+                ),
               ],
             ),
             // デバイスからの受信データがここに表示される。asciiをデコードして文字列表示
             subtitle: Text(ascii.decode(value.toList()).toString()),
             contentPadding: EdgeInsets.all(0.0),
+            // onChangeイベントはあるか？
           ),
           // Listの後ろ
           trailing: Row(
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
               // Read用のボタン
+              // Readいらないので、解錠コード作成ボタンにする
               IconButton(
                 icon: Icon(
-                  Icons.file_download,
+                  Icons.vpn_key,
                   color: Theme.of(context).iconTheme.color.withRed(10),
                 ),
-                onPressed: onReadPressed,
+                // onPressed: onReadPressed,
+                onPressed: () async {
+                  // 「ATE」(テスト用コマンド)を送信して鍵生成
+                  // A:0x41,T:0x54,E:0x45
+                  List<int> writeData = [];
+                  writeData.add(0x41);
+                  writeData.add(0x54);
+                  writeData.add(0x45);
+                  print(writeData);
+                  await characteristic.write(writeData, withoutResponse: true);
+                  // 「ATK」(テスト用コマンド)を送信して鍵受け取り
+                  // A:0x41,T:0x54,K:0x4b
+                },
               ),
               // 書き込み用のボタン
               IconButton(
-                icon: Icon(Icons.file_upload,
+                icon: Icon(Icons.lock_open,
                     color: Theme.of(context).iconTheme.color.withRed(10)),
                 // onPressed: onWritePressed,
                 onPressed: () async {
@@ -239,18 +260,7 @@ class CharacteristicTile extends StatelessWidget {
                   //   print('0x${value.toRadixString(16)}, $index');
                   //   writeData.add(int.parse('0x${value.toRadixString(16)}'));
                   // });
-                  print(openKey.substring(0, 2));
-                  int openKey1 = int.parse('0x${openKey.substring(0, 2)}');
-                  int openKey2 = int.parse('0x${openKey.substring(3, 5)}');
-                  int openKey3 = int.parse('0x${openKey.substring(5, 7)}');
-                  int openKey4 = int.parse('0x${openKey.substring(8, 11)}');
-                  int openKey5 = int.parse('0x${openKey.substring(11, 14)}');
-                  int openKey6 = int.parse('0x${openKey.substring(15)}');
 
-                  print('0x41');
-                  print(0x41);
-                  print('openKey3');
-                  print(openKey3);
                   // Hexで送る:30 -> 0
                   // 41 04 04 04 04 04 04 51
                   writeData.add(int.parse('0x${openKey.substring(0, 2)}'));
@@ -264,57 +274,59 @@ class CharacteristicTile extends StatelessWidget {
                   writeData.add(int.parse('0x${openKey.substring(14)}'));
                   print(writeData);
                   // ★★★★★★★★★★★ 暫定対応 ★★★★★★★★★★★
-                  switch (keyId) {
-                    case '001':
-                      List<int> _writeData = [];
-                      _writeData.add(0x41);
-                      _writeData.add(0x01);
-                      _writeData.add(0x01);
-                      _writeData.add(0x01);
-                      _writeData.add(0x01);
-                      _writeData.add(0x01);
-                      _writeData.add(0x01);
-                      _writeData.add(0x51);
+                  // switch (keyId) {
+                  //   case '001':
+                  //     List<int> _writeData = [];
+                  //     _writeData.add(0x41);
+                  //     _writeData.add(0x01);
+                  //     _writeData.add(0x01);
+                  //     _writeData.add(0x01);
+                  //     _writeData.add(0x01);
+                  //     _writeData.add(0x01);
+                  //     _writeData.add(0x01);
+                  //     _writeData.add(0x51);
 
-                      print(_writeData);
-                      await characteristic.write(_writeData,
-                          withoutResponse: false);
-                      break;
-                    case '002':
-                      List<int> _writeData = [];
-                      print(_writeData);
-                      _writeData.add(0x41);
-                      _writeData.add(0x02);
-                      _writeData.add(0x02);
-                      _writeData.add(0x02);
-                      _writeData.add(0x02);
-                      _writeData.add(0x02);
-                      _writeData.add(0x02);
-                      _writeData.add(0x51);
+                  //     print(_writeData);
+                  //     await characteristic.write(_writeData,
+                  //         withoutResponse: false);
+                  //     break;
+                  //   case '002':
+                  //     List<int> _writeData = [];
+                  //     print(_writeData);
+                  //     _writeData.add(0x41);
+                  //     _writeData.add(0x02);
+                  //     _writeData.add(0x02);
+                  //     _writeData.add(0x02);
+                  //     _writeData.add(0x02);
+                  //     _writeData.add(0x02);
+                  //     _writeData.add(0x02);
+                  //     _writeData.add(0x51);
 
-                      print(_writeData);
-                      await characteristic.write(_writeData,
-                          withoutResponse: false);
-                      break;
-                    case '003':
-                      List<int> _writeData = [];
-                      _writeData.add(0x41);
-                      _writeData.add(0x03);
-                      _writeData.add(0x03);
-                      _writeData.add(0x03);
-                      _writeData.add(0x03);
-                      _writeData.add(0x03);
-                      _writeData.add(0x03);
-                      _writeData.add(0x51);
-                      print(_writeData);
+                  //     print(_writeData);
+                  //     await characteristic.write(_writeData,
+                  //         withoutResponse: false);
+                  //     break;
+                  //   case '003':
+                  //     List<int> _writeData = [];
+                  //     _writeData.add(0x41);
+                  //     _writeData.add(0x03);
+                  //     _writeData.add(0x03);
+                  //     _writeData.add(0x03);
+                  //     _writeData.add(0x03);
+                  //     _writeData.add(0x03);
+                  //     _writeData.add(0x03);
+                  //     _writeData.add(0x51);
+                  //     print(_writeData);
 
-                      await characteristic.write(_writeData,
-                          withoutResponse: false);
-                      break;
-                    // default:
-                    //   await characteristic.write(writeData,
-                    //       withoutResponse: true);
-                  }
+                  //     await characteristic.write(_writeData,
+                  //         withoutResponse: false);
+                  //     break;
+                  //   // default:
+                  //   // await characteristic.write(writeData,
+                  //   //     withoutResponse: true);
+                  // }
+                  // ★★★★★★★★★★★ 暫定対応 ★★★★★★★★★★★
+                  await characteristic.write(writeData, withoutResponse: true);
                 },
               ),
               // 更新（Notify用のボタン）
@@ -408,73 +420,5 @@ class AdapterStateTile extends StatelessWidget {
         ),
       ),
     );
-  }
-}
-
-class ChangeForm extends StatefulWidget {
-  @override
-  _ChangeFormState createState() => _ChangeFormState();
-}
-
-class _ChangeFormState extends State<ChangeForm> {
-  final _formKey = GlobalKey<FormState>();
-
-  String _name = '';
-  String _email = '';
-
-  Widget build(BuildContext context) {
-    return Form(
-        key: _formKey,
-        child: Container(
-            padding: const EdgeInsets.all(50.0),
-            child: Column(
-              children: <Widget>[
-                new TextFormField(
-                  enabled: true,
-                  maxLength: 1,
-                  maxLengthEnforced: false,
-                  obscureText: false,
-                  autovalidate: false,
-                  decoration: const InputDecoration(
-                    hintText: 'お名前を教えてください',
-                    labelText: '名前 *',
-                  ),
-                  validator: (String value) {
-                    return value.isEmpty ? '必須入力です' : null;
-                  },
-                  onSaved: (String value) {
-                    this._name = value;
-                  },
-                ),
-                new TextFormField(
-                  maxLength: 100,
-                  autovalidate: true,
-                  decoration: const InputDecoration(
-                    hintText: '連絡先を教えてください。',
-                    labelText: 'メールアドレス *',
-                  ),
-                  validator: (String value) {
-                    return !value.contains('@') ? 'アットマーク「＠」がありません。' : null;
-                  },
-                  onSaved: (String value) {
-                    this._email = value;
-                  },
-                ),
-                RaisedButton(
-                  onPressed: _submission,
-                  child: Text('保存'),
-                )
-              ],
-            )));
-  }
-
-  void _submission() {
-    if (this._formKey.currentState.validate()) {
-      this._formKey.currentState.save();
-      Scaffold.of(context)
-          .showSnackBar(SnackBar(content: Text('Processing Data')));
-      print(this._name);
-      print(this._email);
-    }
   }
 }

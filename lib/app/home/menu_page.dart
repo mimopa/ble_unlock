@@ -42,10 +42,8 @@ class MenuPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Dabaseへの参照
+
     final database = Provider.of<Database>(context);
-    // database.getParking('F1FDE7B2-F3BA-3259-C1A5-7BC2943A8B81').then((value) {
-    //   print(value.keyId);
-    // });
     return Scaffold(
       appBar: AppBar(
         title: Text('利用開始'),
