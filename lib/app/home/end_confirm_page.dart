@@ -19,6 +19,7 @@ class _EndConfirmPageState extends State<EndConfirmPage> {
   // String openKey;
   BluetoothDevice _connectedDevice;
   String _keyId;
+  String _openKey;
 
   StreamController<List<Map<String, String>>> _controller =
       StreamController<List<Map<String, String>>>.broadcast();
@@ -35,6 +36,7 @@ class _EndConfirmPageState extends State<EndConfirmPage> {
     });
   }
 
+  // BLEデバイスを選択した時に実行される。ここで駐輪機Noと、解錠コードを取得し、決済画面以降に引き継ぐ。
   void _changeDevices(
       BluetoothDevice device, List<Map<String, String>> keyIds) {
     setState(() {
@@ -46,11 +48,17 @@ class _EndConfirmPageState extends State<EndConfirmPage> {
             // print('Stream!');
             // print(r.device.id);
             // print(keymap['bd_id']);
+            // print(keymap['key_id']);
+            // 駐輪機No
             _keyId = keymap['key_id'];
+            // 解錠コード
+            _openKey = keymap['open_key'];
           }
         }
       });
-      print(_keyId);
+      // print('DeviceChenged');
+      // print(_keyId);
+      // print(_openKey);
     });
   }
 
@@ -66,10 +74,11 @@ class _EndConfirmPageState extends State<EndConfirmPage> {
   }
 
   Future _setKeys(Database database) async {
+    // データベース（駐輪機マスタ）から、設定情報を取得する。
     // BDIDと駐輪機IDのリストを取得しておく？
     _keyIds = await _getKeys(database, '001');
-    print('_setKeys');
-    print(_keyIds);
+    // print('_setKeys');
+    // print(_keyIds);
     _controller.add(_keyIds);
   }
 
@@ -112,8 +121,7 @@ class _EndConfirmPageState extends State<EndConfirmPage> {
                   _changeDevices,
                   _keyIds,
                   _keyId,
-                  // _controller,
-                  // openKey,
+                  _openKey,
                 ),
               );
             } else {
@@ -142,8 +150,8 @@ Future<List<Map<String, String>>> _getKeys(
   List<Map<String, String>> keys =
       await database.getParkings(parkId).then((values) {
     List<Map<String, String>> _keyIds = [];
-    print('values');
-    print(values);
+    // print('values');
+    // print(values);
     values.forEach((value) {
       Map<String, String> _keymap = {};
       _keymap['bd_id'] = value.bdId;
@@ -164,9 +172,9 @@ Widget _buldContents(
   Function changeDevices,
   List<Map<String, String>> keyIds,
   String selectedKey,
+  String openKey,
   // StreamController<List<Map<String, String>>> controller,
 ) {
-  String openKey;
   String keyName = '';
   List keyList = [];
   List<String> keyDeviceList = [];
@@ -257,7 +265,7 @@ Widget _buldContents(
                                         //   print(keymap['bd_id']);
                                         // }
                                         keyName = keymap['key_id'];
-                                        openKey = keymap['open_key'];
+                                        // openKey = keymap['open_key'];
                                         keyList.add(keyName);
                                         keyDeviceList
                                             .add(r.device.id.toString());

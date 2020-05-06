@@ -42,7 +42,6 @@ class MenuPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Dabaseへの参照
-
     final database = Provider.of<Database>(context);
     return Scaffold(
       appBar: AppBar(

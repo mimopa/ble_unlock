@@ -1,5 +1,4 @@
 import 'package:ble_unlock/app/home/end_peyoff_page.dart';
-import 'package:ble_unlock/app/home/start_confirm_page.dart';
 import 'package:ble_unlock/common_widgets/platform_alert_dialog.dart';
 import 'package:ble_unlock/landing_page.dart';
 import 'package:ble_unlock/services/auth.dart';
