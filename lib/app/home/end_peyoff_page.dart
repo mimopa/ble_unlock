@@ -1,6 +1,7 @@
 import 'dart:math';
 
-import 'package:ble_unlock/app/home/widgets.dart';
+import 'package:ble_unlock/app/home/device_screen.dart';
+import 'package:ble_unlock/common_widgets/areaParkingName_widget.dart';
 import 'package:ble_unlock/common_widgets/platform_alert_dialog.dart';
 import 'package:ble_unlock/landing_page.dart';
 import 'package:ble_unlock/services/auth.dart';
@@ -14,20 +15,21 @@ class EndPayOffPage extends StatelessWidget {
     this.device,
     this.openKey,
     this.keyId,
+    this.areaDefaultValue,
+    this.parkDefaultValue,
   }) : super(key: key);
 
   final BluetoothDevice device;
   final String openKey;
   final String keyId;
+  final String areaDefaultValue;
+  final String parkDefaultValue;
 
   Future<void> _signOut(BuildContext context) async {
     try {
       final auth = Provider.of<AuthBase>(context);
       await auth.signOut();
-      // print(device.state);
-      // if (device.state == BluetoothDeviceState.connected) {
-      //   await device.disconnect();
-      // }
+      // 接続したデバイスを切断する
       await device.disconnect();
       Navigator.of(context).push(
         MaterialPageRoute(
@@ -55,21 +57,14 @@ class EndPayOffPage extends StatelessWidget {
 
   Future<void> _checkOut(BuildContext context, BluetoothDevice _device) async {
     try {
-      // deviceへ解錠コードを送る？
-      // deviceの接続状態を確認し、Connectedの場合、解錠データを送信
-
       if (_device.state.toString() ==
           BluetoothDeviceState.connected.toString()) {
-        print('CONNECTED');
         final didRequestUnlock = await PlatformAlertDialog(
           title: '解錠',
           content: '解錠しますか？',
           cancelActionText: 'Cancel',
           defaultActionText: 'Unlock',
         ).show(context);
-        if (didRequestUnlock == true) {
-          print('Unlock!');
-        }
       } else {
         print(_device.state.toString());
       }
@@ -87,17 +82,14 @@ class EndPayOffPage extends StatelessWidget {
     ).show(context);
     if (didRequestCheckOut == true) {
       await device.connect();
-      print('支払い完了でデバイス接続してみた！');
-      print(openKey);
       List<BluetoothService> services = await device.discoverServices();
-      services.forEach((service) {
-        print(service.characteristics);
-        List<BluetoothCharacteristic> characteristics = service.characteristics;
-        characteristics.forEach((characteristic) {
-          print(characteristic.serviceUuid);
-          // characteristicに対して、Read,Write,Notify
-        });
-      });
+      // services.forEach((service) {
+      //   print(service.characteristics);
+      //   List<BluetoothCharacteristic> characteristics = service.characteristics;
+      //   characteristics.forEach((characteristic) {
+      //     print(characteristic.serviceUuid);
+      //   });
+      // });
       await _checkOut(context, device);
     }
   }
@@ -171,6 +163,8 @@ class EndPayOffPage extends StatelessWidget {
           _buildServiceTiles,
           openKey,
           keyId,
+          areaDefaultValue,
+          parkDefaultValue,
         ),
       ),
     );
@@ -184,7 +178,11 @@ Widget _buldContents(
   Function _buildServiceTiles,
   String openKey,
   String keyId,
+  String areaDefaultValue,
+  String parkDefaultValue,
 ) {
+  final areaParkingName = AreaParkingName();
+
   return SingleChildScrollView(
     child: Container(
       padding: EdgeInsets.all(10.0),
@@ -227,7 +225,7 @@ Widget _buldContents(
                         children: [
                           TextSpan(text: '駐輪場No '),
                           TextSpan(
-                            text: '100',
+                            text: areaDefaultValue + " - " + parkDefaultValue,
                             style: TextStyle(
                               fontSize: 30,
                               fontWeight: FontWeight.bold,
@@ -239,12 +237,15 @@ Widget _buldContents(
                 SizedBox(height: 10),
                 Padding(
                   padding: const EdgeInsets.only(left: 100),
-                  child: RichText(
-                    text: TextSpan(
-                        style: TextStyle(fontSize: 15, color: Colors.black),
-                        children: [
-                          TextSpan(text: '東京都〇〇駐輪場'),
-                        ]),
+                  child: Row(
+                    children: [
+                      areaParkingName.areaName(context, areaDefaultValue,
+                          fontSize: 15, isRich: true),
+                      SizedBox(width: 5),
+                      areaParkingName.parkName(
+                          context, areaDefaultValue, parkDefaultValue,
+                          fontSize: 15, isRich: true),
+                    ],
                   ),
                 ),
                 SizedBox(height: 10),

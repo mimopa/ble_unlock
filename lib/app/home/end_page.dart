@@ -1,12 +1,14 @@
 import 'package:ble_unlock/app/home/end_confirm_page.dart';
-import 'package:ble_unlock/common_widgets/platform_alert_dialog.dart';
-import 'package:ble_unlock/landing_page.dart';
-import 'package:ble_unlock/services/auth.dart';
+import 'package:ble_unlock/app/sign_in/sign_out.dart';
+import 'package:ble_unlock/common_widgets/areaParkingName_widget.dart';
 import 'package:ble_unlock/services/database.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 import 'package:provider/provider.dart';
+
+import 'models/area.dart';
+import 'models/area_parking.dart';
 
 class EndPage extends StatefulWidget {
   @override
@@ -14,46 +16,44 @@ class EndPage extends StatefulWidget {
 }
 
 class _EndPageState extends State<EndPage> {
-  Future<void> _signOut(BuildContext context) async {
-    try {
-      final auth = Provider.of<AuthBase>(context);
-      await auth.signOut();
-      Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (context) {
-            return LandingPage();
-          },
-        ),
-      );
-    } catch (e) {
-      print(e.toString());
-    }
+  // 地域選択:area_id
+  String _areaDefaultValue = '001';
+
+  // 駐輪場選択:park_id
+  String _parkDefaultValue = '001';
+
+  void _handleAreaChange(String value) {
+    setState(() {
+      _areaDefaultValue = value;
+    });
   }
 
-  Future<void> _confirmSignOut(BuildContext context) async {
-    final didRequestSignOut = await PlatformAlertDialog(
-      title: 'Logout',
-      content: 'Are you sure that you want to logout?',
-      cancelActionText: 'Cancel',
-      defaultActionText: 'Logout',
-    ).show(context);
-    if (didRequestSignOut == true) {
-      _signOut(context);
-    }
+  void _handleParkChange(String value) {
+    setState(() {
+      _parkDefaultValue = value;
+    });
   }
 
   // パスコード
-  String currentPassCode = "";
+  String _currentPassCode = "";
 
   void _passCodeChange(String newPassCode) {
     setState(() {
-      currentPassCode = newPassCode;
-      // print(currentPassCode);
+      _currentPassCode = newPassCode;
     });
   }
 
   @override
+  void initState() {
+    super.initState();
+    _areaDefaultValue = '001';
+    _parkDefaultValue = '001';
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final SignOutModule _signOutModule = SignOutModule();
+
     return Scaffold(
       appBar: AppBar(
         title: Text('利用終了'),
@@ -66,22 +66,37 @@ class _EndPageState extends State<EndPage> {
                 color: Colors.white,
               ),
             ),
-            onPressed: () => _confirmSignOut(context),
+            onPressed: () => _signOutModule.confirmSignOut(context),
           ),
         ],
       ),
       body: Scaffold(
         backgroundColor: Colors.white,
-        body: _buldContents(context, currentPassCode, _passCodeChange),
+        body: _buldContents(
+          context,
+          _areaDefaultValue,
+          _parkDefaultValue,
+          _handleAreaChange,
+          _handleParkChange,
+          _currentPassCode,
+          _passCodeChange,
+        ),
       ),
     );
   }
 }
 
 Widget _buldContents(
-    BuildContext context, String currentPassCode, Function passCodeChanged) {
+  BuildContext context,
+  String areaDefaultValue,
+  String parkDefaultValue,
+  Function handleAreaChange,
+  Function handleParkChange,
+  String currentPassCode,
+  Function passCodeChanged,
+) {
   final database = Provider.of<Database>(context);
-
+  final areaParkingName = AreaParkingName();
   return SingleChildScrollView(
     child: Container(
       padding: EdgeInsets.all(10.0),
@@ -101,7 +116,87 @@ Widget _buldContents(
             indent: 10,
             endIndent: 10,
           ),
-          SizedBox(height: 40),
+          Padding(
+            padding: const EdgeInsets.all(18.0),
+            child: Row(
+              children: <Widget>[
+                Text(
+                  '駐輪場No',
+                  style: TextStyle(fontSize: 12),
+                ),
+                SizedBox(width: 30),
+                // 地域選択：Area
+                // StreamBuilderにして、Firestoreからareaを取得するように変更する。
+                StreamBuilder<List<Area>>(
+                  stream: database.areasStream(),
+                  builder: (context, snapshot) {
+                    if (!snapshot.hasData) {
+                      return Text('Loading');
+                    } else {
+                      return DropdownButton<String>(
+                        value: areaDefaultValue,
+                        onChanged: handleAreaChange,
+                        items: snapshot.data.map<DropdownMenuItem<String>>((r) {
+                          return DropdownMenuItem<String>(
+                            value: r.id,
+                            child: Text(
+                              r.id,
+                              style: TextStyle(
+                                fontSize: 20.0,
+                                color: Colors.black,
+                              ),
+                            ),
+                          );
+                        }).toList(),
+                      );
+                    }
+                  },
+                ),
+                SizedBox(width: 10),
+                Text('ー'),
+                SizedBox(width: 10),
+                StreamBuilder<List<AreaParking>>(
+                  stream: database.areaParkingsStream(areaId: areaDefaultValue),
+                  builder: (context, snapshot) {
+                    if (!snapshot.hasData) {
+                      return Text('Loading');
+                    } else {
+                      return DropdownButton<String>(
+                        value: parkDefaultValue,
+                        onChanged: handleParkChange,
+                        items: snapshot.data.map<DropdownMenuItem<String>>((r) {
+                          return DropdownMenuItem<String>(
+                            value: r.id,
+                            child: Text(
+                              r.id,
+                              style: TextStyle(
+                                fontSize: 20.0,
+                                color: Colors.black,
+                              ),
+                            ),
+                          );
+                        }).toList(),
+                      );
+                    }
+                  },
+                ),
+              ],
+            ),
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              areaParkingName.areaName(context, areaDefaultValue),
+              SizedBox(width: 5),
+              areaParkingName.parkName(
+                  context, areaDefaultValue, parkDefaultValue),
+            ],
+          ),
+          Text(
+            '※駐輪場名が異なる場合はお手数ですが、正しい駐輪場番号を\nご入力ください。',
+            style: TextStyle(fontSize: 10.0),
+          ),
+          SizedBox(height: 20),
           Stack(children: <Widget>[
             Padding(
               padding: const EdgeInsets.all(18.0),
@@ -114,7 +209,6 @@ Widget _buldContents(
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  // SizedBox(width: 180),
                 ],
               ),
             ),
@@ -134,7 +228,7 @@ Widget _buldContents(
                   onChanged: (value) => passCodeChanged(value),
                 )),
           ]),
-          SizedBox(height: 40),
+          SizedBox(height: 20),
           Container(
             width: double.infinity,
             decoration: BoxDecoration(
@@ -191,10 +285,12 @@ Widget _buldContents(
                         Navigator.of(context).push(
                           MaterialPageRoute(
                             builder: (context) {
-                              // return EndConfirmPage();
                               return Provider<Database>.value(
                                 value: database,
-                                child: EndConfirmPage(),
+                                child: EndConfirmPage(
+                                  areaDefaultValue: areaDefaultValue,
+                                  parkDefaultValue: parkDefaultValue,
+                                ),
                               );
                             },
                           ),

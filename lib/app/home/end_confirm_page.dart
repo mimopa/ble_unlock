@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:ble_unlock/app/home/payoff_comfirm_page.dart';
 import 'package:ble_unlock/app/sign_in/sign_out.dart';
+import 'package:ble_unlock/common_widgets/areaParkingName_widget.dart';
 import 'package:ble_unlock/common_widgets/platform_alert_dialog.dart';
 import 'package:ble_unlock/services/database.dart';
 import 'package:flutter/material.dart';
@@ -9,6 +10,11 @@ import 'package:flutter_blue/flutter_blue.dart';
 import 'package:provider/provider.dart';
 
 class EndConfirmPage extends StatefulWidget {
+  EndConfirmPage({Key key, this.areaDefaultValue, this.parkDefaultValue});
+
+  final String areaDefaultValue;
+  final String parkDefaultValue;
+
   @override
   _EndConfirmPageState createState() => _EndConfirmPageState();
 }
@@ -45,10 +51,6 @@ class _EndConfirmPageState extends State<EndConfirmPage> {
       keyIds.asMap().forEach((index, keymap) {
         if (keymap.values.toList().indexOf(device.id.toString()) >= 0) {
           if (device.id.toString() == keymap['bd_id']) {
-            // print('Stream!');
-            // print(r.device.id);
-            // print(keymap['bd_id']);
-            // print(keymap['key_id']);
             // 駐輪機No
             _keyId = keymap['key_id'];
             // 解錠コード
@@ -56,9 +58,6 @@ class _EndConfirmPageState extends State<EndConfirmPage> {
           }
         }
       });
-      // print('DeviceChenged');
-      // print(_keyId);
-      // print(_openKey);
     });
   }
 
@@ -88,8 +87,6 @@ class _EndConfirmPageState extends State<EndConfirmPage> {
     // ここで実行すると描画のたびに流れるので改善が必要！！
     final database = Provider.of<Database>(context);
     _setKeys(database);
-    // print('build!');
-    // print(_keyIds.isEmpty);
 
     return Scaffold(
       appBar: AppBar(
@@ -122,6 +119,8 @@ class _EndConfirmPageState extends State<EndConfirmPage> {
                   _keyIds,
                   _keyId,
                   _openKey,
+                  widget.areaDefaultValue,
+                  widget.parkDefaultValue,
                 ),
               );
             } else {
@@ -143,7 +142,30 @@ class _EndConfirmPageState extends State<EndConfirmPage> {
   }
 }
 
+// /parking/で駐輪キー一覧を取得するメソッド
 Future<List<Map<String, String>>> _getKeys(
+  Database database,
+  String parkId,
+) async {
+  List<Map<String, String>> keys =
+      await database.getParkings(parkId).then((values) {
+    List<Map<String, String>> _keyIds = [];
+    // print('values');
+    // print(values);
+    values.forEach((value) {
+      Map<String, String> _keymap = {};
+      _keymap['bd_id'] = value.bdId;
+      _keymap['key_id'] = value.keyId;
+      _keymap['open_key'] = value.openKey;
+      _keyIds.add(_keymap);
+    });
+    return _keyIds;
+  });
+  return keys;
+}
+
+// areaコード、Parkingコードから駐輪キー一覧を取得するメソッド
+Future<List<Map<String, String>>> _getAreaParkingKeys(
   Database database,
   String parkId,
 ) async {
@@ -173,11 +195,14 @@ Widget _buldContents(
   List<Map<String, String>> keyIds,
   String selectedKey,
   String openKey,
-  // StreamController<List<Map<String, String>>> controller,
+  String areaDefaultValue,
+  String parkDefaultValue,
 ) {
   String keyName = '';
   List keyList = [];
   List<String> keyDeviceList = [];
+  final areaParkingName = AreaParkingName();
+
   return SingleChildScrollView(
     child: Container(
       padding: EdgeInsets.all(10.0),
@@ -203,14 +228,20 @@ Widget _buldContents(
                       children: [
                         TextSpan(text: '駐輪場No'),
                         TextSpan(
-                          text: '006',
+                          text: areaDefaultValue + " - " + parkDefaultValue,
                           style: TextStyle(fontSize: 18, color: Colors.red),
                         ),
                       ]),
                 ),
-                Text(
-                  '東京都〇〇駐輪場',
-                  style: TextStyle(fontSize: 15),
+                Row(
+                  children: [
+                    areaParkingName.areaName(context, areaDefaultValue,
+                        fontSize: 15),
+                    SizedBox(width: 5),
+                    areaParkingName.parkName(
+                        context, areaDefaultValue, parkDefaultValue,
+                        fontSize: 15),
+                  ],
                 ),
                 SizedBox(
                   height: 20,
@@ -250,29 +281,21 @@ Widget _buldContents(
                               // このmapのあとに、device.idから、駐輪機Noを取得する処理を行う。
                               items: snapshot.data
                                   .map<DropdownMenuItem<BluetoothDevice>>((r) {
-                                    // keyName = '';
-                                    // print('絞り込み');
-                                    // print(r.device.id);
                                     keyIds.asMap().forEach((index, keymap) {
                                       if (keymap.values.toList().indexOf(
                                               r.device.id.toString()) >=
                                           0) {
-                                        // if (r.device.id.toString() ==
-                                        //     keymap['bd_id']) {
-                                        //   print('Stream!');
-                                        //   print(r.device.id);
-                                        //   print(r.device.name);
-                                        //   print(keymap['bd_id']);
-                                        // }
                                         keyName = keymap['key_id'];
-                                        // openKey = keymap['open_key'];
                                         keyList.add(keyName);
                                         keyDeviceList
                                             .add(r.device.id.toString());
                                       }
-                                      // return keyDeviceList.toList();
                                     });
-                                    if (r.device.name == 'Renesas-BLE') {
+                                    // デバイスのIDを確認するため
+                                    print(r.device.name);
+                                    print(r.device.id.id);
+                                    if (r.device.name == 'REL-BLE') {
+                                      print('REL-BLE!!!');
                                       print(r.device.id.id);
                                       print(r.device.name);
                                     }
@@ -507,6 +530,8 @@ Widget _buldContents(
                         device: connectedDevice,
                         openKey: openKey,
                         keyId: selectedKey,
+                        areaDefaultValue: areaDefaultValue,
+                        parkDefaultValue: parkDefaultValue,
                       );
                     },
                   ),

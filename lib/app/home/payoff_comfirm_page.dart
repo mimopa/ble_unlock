@@ -1,4 +1,5 @@
 import 'package:ble_unlock/app/home/end_peyoff_page.dart';
+import 'package:ble_unlock/common_widgets/areaParkingName_widget.dart';
 import 'package:ble_unlock/common_widgets/platform_alert_dialog.dart';
 import 'package:ble_unlock/landing_page.dart';
 import 'package:ble_unlock/services/auth.dart';
@@ -14,11 +15,15 @@ class PayOffComfirmPage extends StatelessWidget {
     this.device,
     this.openKey,
     this.keyId,
+    this.areaDefaultValue,
+    this.parkDefaultValue,
   }) : super(key: key);
 
   final BluetoothDevice device;
   final String openKey;
   final String keyId;
+  final String areaDefaultValue;
+  final String parkDefaultValue;
 
   Future<void> _signOut(BuildContext context) async {
     try {
@@ -73,6 +78,8 @@ class PayOffComfirmPage extends StatelessWidget {
           device,
           openKey,
           keyId,
+          areaDefaultValue,
+          parkDefaultValue,
         ),
       ),
     );
@@ -84,12 +91,11 @@ Widget _buldContents(
   BluetoothDevice device,
   String openKey,
   String keyId,
+  String areaDefaultValue,
+  String parkDefaultValue,
 ) {
-  print('payoff_comfirm');
-  print(keyId);
+  final areaParkingName = AreaParkingName();
   var textSpan = TextSpan(
-    // TODO:駐輪機Noに変更する必要がある。
-    // text: device.name,
     text: keyId,
     style: TextStyle(
       fontSize: 30,
@@ -138,7 +144,7 @@ Widget _buldContents(
                         children: [
                           TextSpan(text: '駐輪場No '),
                           TextSpan(
-                            text: '100',
+                            text: areaDefaultValue + " - " + parkDefaultValue,
                             style: TextStyle(
                               fontSize: 30,
                               fontWeight: FontWeight.bold,
@@ -150,12 +156,15 @@ Widget _buldContents(
                 SizedBox(height: 10),
                 Padding(
                   padding: const EdgeInsets.only(left: 100),
-                  child: RichText(
-                    text: TextSpan(
-                        style: TextStyle(fontSize: 15, color: Colors.black),
-                        children: [
-                          TextSpan(text: '東京都〇〇駐輪場'),
-                        ]),
+                  child: Row(
+                    children: [
+                      areaParkingName.areaName(context, areaDefaultValue,
+                          fontSize: 15, isRich: true),
+                      SizedBox(width: 5),
+                      areaParkingName.parkName(
+                          context, areaDefaultValue, parkDefaultValue,
+                          fontSize: 15, isRich: true),
+                    ],
                   ),
                 ),
                 SizedBox(height: 10),
@@ -247,7 +256,10 @@ Widget _buldContents(
                         Navigator.of(context).push(
                           MaterialPageRoute(
                             builder: (context) {
-                              return EndConfirmPage();
+                              return EndConfirmPage(
+                                areaDefaultValue: areaDefaultValue,
+                                parkDefaultValue: parkDefaultValue,
+                              );
                             },
                           ),
                         );
@@ -316,6 +328,8 @@ Widget _buldContents(
                                 device: device,
                                 openKey: openKey,
                                 keyId: keyId,
+                                areaDefaultValue: areaDefaultValue,
+                                parkDefaultValue: parkDefaultValue,
                               );
                             },
                           ),

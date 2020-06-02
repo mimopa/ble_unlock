@@ -1,5 +1,6 @@
 import 'package:ble_unlock/app/home/models/entry.dart';
 import 'package:ble_unlock/app/sign_in/sign_out.dart';
+import 'package:ble_unlock/common_widgets/areaParkingName_widget.dart';
 import 'package:ble_unlock/common_widgets/platform_exception_alert_dialog.dart';
 import 'package:ble_unlock/landing_page.dart';
 import 'package:ble_unlock/services/database.dart';
@@ -11,10 +12,16 @@ import 'package:provider/provider.dart';
 class StartConfirmPage extends StatelessWidget {
   // TODO:パスコードを追加する
   // 駐輪場ID
+  final String areaDefaultValue;
+
   final String parkDefaultValue;
   // 駐輪機ID
   final String keyDefaultValue;
-  const StartConfirmPage({Key key, this.parkDefaultValue, this.keyDefaultValue})
+  const StartConfirmPage(
+      {Key key,
+      this.areaDefaultValue,
+      this.parkDefaultValue,
+      this.keyDefaultValue})
       : super(key: key);
 
   // 利用者の駐輪エントリー登録。登録完了後はダイアログを表示する。
@@ -141,6 +148,8 @@ class StartConfirmPage extends StatelessWidget {
   }
 
   Widget _buldContents(BuildContext context) {
+    final areaParkingName = AreaParkingName();
+
     return SingleChildScrollView(
       child: Container(
         padding: EdgeInsets.all(10.0),
@@ -166,14 +175,20 @@ class StartConfirmPage extends StatelessWidget {
                         children: [
                           TextSpan(text: '駐輪場No'),
                           TextSpan(
-                            text: parkDefaultValue,
+                            text: areaDefaultValue + " - " + parkDefaultValue,
                             style: TextStyle(fontSize: 18, color: Colors.red),
                           ),
                         ]),
                   ),
-                  Text(
-                    '東京都〇〇駐輪場',
-                    style: TextStyle(fontSize: 15),
+                  Row(
+                    children: [
+                      areaParkingName.areaName(context, areaDefaultValue,
+                          fontSize: 15),
+                      SizedBox(width: 5),
+                      areaParkingName.parkName(
+                          context, areaDefaultValue, parkDefaultValue,
+                          fontSize: 15),
+                    ],
                   ),
                   SizedBox(
                     height: 20,
@@ -213,7 +228,7 @@ class StartConfirmPage extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
-                  SizedBox(height: 30),
+                  SizedBox(height: 10),
                   Row(
                     children: <Widget>[
                       Text(
@@ -242,7 +257,7 @@ class StartConfirmPage extends StatelessWidget {
                     ],
                   ),
                   SizedBox(
-                    height: 30,
+                    height: 10,
                   ),
                 ],
               ),

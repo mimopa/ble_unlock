@@ -1,5 +1,8 @@
 import 'dart:async';
 
+import 'package:ble_unlock/app/home/models/area.dart';
+import 'package:ble_unlock/app/home/models/area_parking.dart';
+import 'package:ble_unlock/app/home/models/area_parking_key.dart';
 import 'package:ble_unlock/app/home/models/entry.dart';
 import 'package:ble_unlock/app/home/models/parking.dart';
 import 'package:ble_unlock/services/api_path.dart';
@@ -8,9 +11,21 @@ import 'package:meta/meta.dart';
 
 abstract class Database {
   Future<void> setParking(Parking parking);
-  Stream<Parking> parkingStream({@required String bdId});
   Future<Parking> getParking(String parkId, String bdId);
   Future<List<Parking>> getParkings(String parkId);
+  Future<List<Parking>> getAreaParkingKeys(String areaId, String parkId);
+  Stream<Area> areaStream({@required String areaId});
+  Stream<AreaParking> areaParkingStream(
+      {@required String areaId, @required String parkId});
+  Stream<AreaParkingKey> areaParkingKeyStream(
+      {@required String areaId,
+      @required String parkId,
+      @required String keyId});
+  Stream<List<Area>> areasStream();
+  Stream<List<AreaParking>> areaParkingsStream({@required String areaId});
+  Stream<List<AreaParkingKey>> areaParkingKeysStream(
+      {@required String areaId, @required String parkId});
+  Stream<Parking> parkingStream({@required String bdId});
   Future<void> setEntry(Entry entry);
   Future<Entry> getEntry();
   Future<void> deleteEntry(Entry entry);
@@ -24,6 +39,8 @@ class FirestoreDatabase implements Database {
 
   final _service = FirestoreService.instance;
 
+  // Stream
+
   @override
   Stream<Parking> parkingStream(
           {@required String parkId, @required String bdId}) =>
@@ -31,6 +48,50 @@ class FirestoreDatabase implements Database {
         path: APIPath.parking(parkId, bdId),
         builder: (data, documentId) => Parking.fromMap(data, documentId),
       );
+
+  @override
+  Stream<Area> areaStream({@required String areaId}) => _service.documentStream(
+        path: APIPath.area(areaId),
+        builder: (data, documentId) => Area.fromMap(data, documentId),
+      );
+
+  @override
+  Stream<List<Area>> areasStream() => _service.collectionStream(
+        path: APIPath.areas(),
+        builder: (data, documentId) => Area.fromMap(data, documentId),
+      );
+
+  @override
+  Stream<AreaParking> areaParkingStream({String areaId, String parkId}) =>
+      _service.documentStream(
+        path: APIPath.areaParking(areaId, parkId),
+        builder: (data, documentId) => AreaParking.fromMap(data, documentId),
+      );
+
+  @override
+  Stream<List<AreaParking>> areaParkingsStream({String areaId}) =>
+      _service.collectionStream(
+        path: APIPath.areaParkings(areaId),
+        builder: (data, documentId) => AreaParking.fromMap(data, documentId),
+      );
+
+  @override
+  Stream<AreaParkingKey> areaParkingKeyStream(
+          {String areaId, String parkId, String keyId}) =>
+      _service.documentStream(
+        path: APIPath.areaParkingKey(areaId, parkId, keyId),
+        builder: (data, documentId) => AreaParkingKey.fromMap(data, documentId),
+      );
+
+  @override
+  Stream<List<AreaParkingKey>> areaParkingKeysStream(
+          {String areaId, String parkId}) =>
+      _service.collectionStream(
+        path: APIPath.areaParkingKeys(areaId, parkId),
+        builder: (data, documentId) => AreaParkingKey.fromMap(data, documentId),
+      );
+
+  // Future
 
   @override
   Future<void> setParking(Parking parking) {
@@ -51,7 +112,22 @@ class FirestoreDatabase implements Database {
     List keyList = [];
     List<Parking> parkings = [];
     // parkIdは不要
-    await _service.getList(path: APIPath.parkings(parkId)).then((docs) {
+    await _service.getList(path: APIPath.parkings()).then((docs) {
+      docs.forEach((doc) {
+        keyList.add(doc.data['key_id']);
+        parkings.add(Parking.fromMap(doc.data, parkId));
+      });
+    });
+    return parkings;
+  }
+
+  @override
+  Future<List<Parking>> getAreaParkingKeys(String areaId, String parkId) async {
+    List keyList = [];
+    List<Parking> parkings = [];
+    await _service
+        .getList(path: APIPath.areaParking(areaId, parkId))
+        .then((docs) {
       docs.forEach((doc) {
         keyList.add(doc.data['key_id']);
         parkings.add(Parking.fromMap(doc.data, parkId));

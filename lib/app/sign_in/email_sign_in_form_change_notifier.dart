@@ -100,7 +100,8 @@ class _EmailSignInFormChangeNotifierState
         errorText: model.passwordErrorText,
         enabled: model.isLoading == false,
       ),
-      obscureText: true,
+      // obscureText: true, // obscureText: trueを設定すると、キーボード入力を受け付けなくなる。Flutterのバグ
+      // https://github.com/flutter/flutter/issues/55081
       textInputAction: TextInputAction.done,
       onChanged: model.updatePassword,
       onEditingComplete: _submit,

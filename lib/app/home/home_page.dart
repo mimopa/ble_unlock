@@ -1,9 +1,14 @@
+import 'package:ble_unlock/app/home/models/area_parking_key.dart';
 import 'package:ble_unlock/app/home/start_confirm_page.dart';
 import 'package:ble_unlock/app/sign_in/sign_out.dart';
+import 'package:ble_unlock/common_widgets/areaParkingName_widget.dart';
 import 'package:ble_unlock/services/database.dart';
 import 'package:flutter/material.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 import 'package:provider/provider.dart';
+
+import 'models/area.dart';
+import 'models/area_parking.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -11,12 +16,27 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  // 地域選択:area_id
+  String _areaDefaultValue = '001';
+
   // 駐輪場選択:park_id
   String _parkDefaultValue = '001';
-  final List<String> _list = <String>['001', '002', '003', '004'];
+
   // 駐輪機選択:key_id
   String _keyDefaultValue = '001';
-  final List<String> _keyList = <String>['001', '002', '003', '004'];
+  // final List<String> _keyList = <String>['001', '002', '003', '004'];
+
+  void _handleAreaChange(String value) {
+    setState(() {
+      _areaDefaultValue = value;
+    });
+  }
+
+  void _handleParkChange(String value) {
+    setState(() {
+      _parkDefaultValue = value;
+    });
+  }
 
   // パスコード
   String currentPassCode = "";
@@ -30,9 +50,9 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
-  void _handleKeyChange(String newKeyValue) {
+  void _handleKeyChange(String value) {
     setState(() {
-      _keyDefaultValue = newKeyValue;
+      _keyDefaultValue = value;
     });
   }
 
@@ -75,10 +95,12 @@ class _HomePageState extends State<HomePage> {
         backgroundColor: Colors.white,
         body: _buldContents(
             context,
+            _areaDefaultValue,
             _parkDefaultValue,
-            _list,
+            _handleAreaChange,
+            _handleParkChange,
             _keyDefaultValue,
-            _keyList,
+            // _keyList,
             currentPassCode,
             _handleChange,
             _handleKeyChange,
@@ -91,10 +113,12 @@ class _HomePageState extends State<HomePage> {
 
 Widget _buldContents(
   BuildContext context,
+  String areaDefaultValue,
   String parkDefaultValue,
-  List<String> list,
+  Function handleAreaChange,
+  Function handleParkChange,
   String keyDefaultValue,
-  List<String> keyList,
+  // List<String> keyList,
   String currentPassCode,
   Function onChanged,
   Function handleKeyChange,
@@ -102,6 +126,8 @@ Widget _buldContents(
   Function passCodeConfirmChange,
 ) {
   final database = Provider.of<Database>(context);
+  final areaParkingName = AreaParkingName();
+
   return SingleChildScrollView(
     child: Container(
       padding: EdgeInsets.all(8.0),
@@ -130,47 +156,71 @@ Widget _buldContents(
                   style: TextStyle(fontSize: 12),
                 ),
                 SizedBox(width: 30),
-                DropdownButton<String>(
-                  value: parkDefaultValue,
-                  onChanged: onChanged,
-                  items: list.map<DropdownMenuItem<String>>((String value) {
-                    return DropdownMenuItem<String>(
-                      value: value,
-                      child: Text(
-                        value,
-                        style: TextStyle(
-                          backgroundColor: Theme.of(context).canvasColor,
-                          fontSize: 19.0,
-                          color: Colors.black,
-                        ),
-                      ),
-                    );
-                  }).toList(),
+                StreamBuilder<List<Area>>(
+                  stream: database.areasStream(),
+                  builder: (context, snapshot) {
+                    if (!snapshot.hasData) {
+                      return Text('Loading');
+                    } else {
+                      return DropdownButton<String>(
+                        value: areaDefaultValue,
+                        onChanged: handleAreaChange,
+                        items: snapshot.data.map<DropdownMenuItem<String>>((r) {
+                          return DropdownMenuItem<String>(
+                            value: r.id,
+                            child: Text(
+                              r.id,
+                              style: TextStyle(
+                                fontSize: 20.0,
+                                color: Colors.black,
+                              ),
+                            ),
+                          );
+                        }).toList(),
+                      );
+                    }
+                  },
                 ),
                 SizedBox(width: 10),
                 Text('ー'),
                 SizedBox(width: 10),
-                DropdownButton<String>(
-                  value: parkDefaultValue,
-                  onChanged: onChanged,
-                  items: list.map<DropdownMenuItem<String>>((String value) {
-                    return DropdownMenuItem<String>(
-                      value: value,
-                      child: Text(
-                        value,
-                        style: TextStyle(
-                          backgroundColor: Theme.of(context).canvasColor,
-                          fontSize: 19.0,
-                          color: Colors.black,
-                        ),
-                      ),
-                    );
-                  }).toList(),
+                StreamBuilder<List<AreaParking>>(
+                  stream: database.areaParkingsStream(areaId: areaDefaultValue),
+                  builder: (context, snapshot) {
+                    if (!snapshot.hasData) {
+                      return Text('Loading');
+                    } else {
+                      return DropdownButton<String>(
+                        value: parkDefaultValue,
+                        onChanged: handleParkChange,
+                        items: snapshot.data.map<DropdownMenuItem<String>>((r) {
+                          return DropdownMenuItem<String>(
+                            value: r.id,
+                            child: Text(
+                              r.id,
+                              style: TextStyle(
+                                fontSize: 20.0,
+                                color: Colors.black,
+                              ),
+                            ),
+                          );
+                        }).toList(),
+                      );
+                    }
+                  },
                 ),
               ],
             ),
           ),
-          Text('東京都〇〇駐輪場'),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              areaParkingName.areaName(context, areaDefaultValue),
+              SizedBox(width: 5),
+              areaParkingName.parkName(
+                  context, areaDefaultValue, parkDefaultValue),
+            ],
+          ),
           Text(
             '※駐輪場名が異なる場合はお手数ですが、正しい駐輪場番号を\nご入力ください。',
             style: TextStyle(fontSize: 10.0),
@@ -185,26 +235,31 @@ Widget _buldContents(
                   style: TextStyle(fontSize: 12),
                 ),
                 SizedBox(width: 30),
-                Container(
-                  width: 100,
-                  child: DropdownButton<String>(
-                    value: keyDefaultValue,
-                    onChanged: handleKeyChange,
-                    items:
-                        keyList.map<DropdownMenuItem<String>>((String value) {
-                      return DropdownMenuItem<String>(
-                        value: value,
-                        child: Text(
-                          value,
-                          style: TextStyle(
-                            backgroundColor: Theme.of(context).canvasColor,
-                            fontSize: 19.0,
-                            color: Colors.black,
-                          ),
-                        ),
+                StreamBuilder<List<AreaParkingKey>>(
+                  stream: database.areaParkingKeysStream(
+                      areaId: areaDefaultValue, parkId: parkDefaultValue),
+                  builder: (context, snapshot) {
+                    if (!snapshot.hasData) {
+                      return Text('Loading');
+                    } else {
+                      return DropdownButton<String>(
+                        value: keyDefaultValue,
+                        onChanged: handleKeyChange,
+                        items: snapshot.data.map<DropdownMenuItem<String>>((r) {
+                          return DropdownMenuItem<String>(
+                            value: r.id,
+                            child: Text(
+                              r.id,
+                              style: TextStyle(
+                                fontSize: 20.0,
+                                color: Colors.black,
+                              ),
+                            ),
+                          );
+                        }).toList(),
                       );
-                    }).toList(),
-                  ),
+                    }
+                  },
                 ),
               ],
             ),
@@ -295,7 +350,7 @@ Widget _buldContents(
                   onChanged: (value) => passCodeConfirmChange(value),
                 )),
           ]),
-          SizedBox(height: 100),
+          SizedBox(height: 30),
           FlatButton(
             child: new Icon(
               Icons.arrow_forward,
@@ -311,6 +366,7 @@ Widget _buldContents(
                     return Provider<Database>.value(
                       value: database,
                       child: StartConfirmPage(
+                        areaDefaultValue: areaDefaultValue,
                         parkDefaultValue: parkDefaultValue,
                         keyDefaultValue: keyDefaultValue,
                       ),

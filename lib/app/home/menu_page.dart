@@ -106,7 +106,6 @@ class MenuPage extends StatelessWidget {
                     Navigator.of(context).push(
                       CupertinoPageRoute(
                         builder: (context) {
-                          // return HomePage();
                           return Provider<Database>.value(
                             value: database,
                             child: HomePage(),
@@ -139,7 +138,6 @@ class MenuPage extends StatelessWidget {
                     Navigator.of(context).push(
                       CupertinoPageRoute(
                         builder: (context) {
-                          // return EndPage();
                           return Provider<Database>.value(
                             value: database,
                             child: EndPage(),
