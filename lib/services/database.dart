@@ -13,7 +13,7 @@ abstract class Database {
   Future<void> setParking(Parking parking);
   Future<Parking> getParking(String parkId, String bdId);
   Future<List<Parking>> getParkings(String parkId);
-  Future<List<Parking>> getAreaParkingKeys(String areaId, String parkId);
+  Future<List<AreaParkingKey>> getAreaParkingKeys(String areaId, String parkId);
   Stream<Area> areaStream({@required String areaId});
   Stream<AreaParking> areaParkingStream(
       {@required String areaId, @required String parkId});
@@ -122,15 +122,19 @@ class FirestoreDatabase implements Database {
   }
 
   @override
-  Future<List<Parking>> getAreaParkingKeys(String areaId, String parkId) async {
+  Future<List<AreaParkingKey>> getAreaParkingKeys(
+      String areaId, String parkId) async {
     List keyList = [];
-    List<Parking> parkings = [];
+    List<AreaParkingKey> parkings = [];
     await _service
-        .getList(path: APIPath.areaParking(areaId, parkId))
+        .getList(path: APIPath.areaParkingKeys(areaId, parkId))
         .then((docs) {
       docs.forEach((doc) {
-        keyList.add(doc.data['key_id']);
-        parkings.add(Parking.fromMap(doc.data, parkId));
+        // keyList.add(doc.data['key_id']);
+        keyList.add(doc.documentID);
+        parkings.add(AreaParkingKey.fromMap(doc.data, doc.documentID));
+        print('getAreaParkingKes');
+        print(keyList);
       });
     });
     return parkings;

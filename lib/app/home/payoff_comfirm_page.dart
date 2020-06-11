@@ -3,6 +3,7 @@ import 'package:ble_unlock/common_widgets/areaParkingName_widget.dart';
 import 'package:ble_unlock/common_widgets/platform_alert_dialog.dart';
 import 'package:ble_unlock/landing_page.dart';
 import 'package:ble_unlock/services/auth.dart';
+import 'package:ble_unlock/services/database.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_blue/flutter_blue.dart';
 import 'package:provider/provider.dart';
@@ -94,6 +95,8 @@ Widget _buldContents(
   String areaDefaultValue,
   String parkDefaultValue,
 ) {
+  final database = Provider.of<Database>(context);
+
   final areaParkingName = AreaParkingName();
   var textSpan = TextSpan(
     text: keyId,
@@ -256,9 +259,16 @@ Widget _buldContents(
                         Navigator.of(context).push(
                           MaterialPageRoute(
                             builder: (context) {
-                              return EndConfirmPage(
-                                areaDefaultValue: areaDefaultValue,
-                                parkDefaultValue: parkDefaultValue,
+                              // return EndConfirmPage(
+                              //   areaDefaultValue: areaDefaultValue,
+                              //   parkDefaultValue: parkDefaultValue,
+                              // );
+                              return Provider<Database>.value(
+                                value: database,
+                                child: EndConfirmPage(
+                                  areaDefaultValue: areaDefaultValue,
+                                  parkDefaultValue: parkDefaultValue,
+                                ),
                               );
                             },
                           ),
@@ -324,12 +334,22 @@ Widget _buldContents(
                         Navigator.of(context).push(
                           MaterialPageRoute(
                             builder: (context) {
-                              return EndPayOffPage(
-                                device: device,
-                                openKey: openKey,
-                                keyId: keyId,
-                                areaDefaultValue: areaDefaultValue,
-                                parkDefaultValue: parkDefaultValue,
+                              // return EndPayOffPage(
+                              //   device: device,
+                              //   openKey: openKey,
+                              //   keyId: keyId,
+                              //   areaDefaultValue: areaDefaultValue,
+                              //   parkDefaultValue: parkDefaultValue,
+                              // );
+                              return Provider<Database>.value(
+                                value: database,
+                                child: EndPayOffPage(
+                                  device: device,
+                                  openKey: openKey,
+                                  keyId: keyId,
+                                  areaDefaultValue: areaDefaultValue,
+                                  parkDefaultValue: parkDefaultValue,
+                                ),
                               );
                             },
                           ),

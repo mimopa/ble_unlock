@@ -75,7 +75,9 @@ class _EndConfirmPageState extends State<EndConfirmPage> {
   Future _setKeys(Database database) async {
     // データベース（駐輪機マスタ）から、設定情報を取得する。
     // BDIDと駐輪機IDのリストを取得しておく？
-    _keyIds = await _getKeys(database, '001');
+    // _keyIds = await _getKeys(database, '001');
+    _keyIds = await _getAreaParkingKeys(
+        database, widget.areaDefaultValue, widget.parkDefaultValue);
     // print('_setKeys');
     // print(_keyIds);
     _controller.add(_keyIds);
@@ -167,17 +169,19 @@ Future<List<Map<String, String>>> _getKeys(
 // areaコード、Parkingコードから駐輪キー一覧を取得するメソッド
 Future<List<Map<String, String>>> _getAreaParkingKeys(
   Database database,
-  String parkId,
+  String areaDefaultValue,
+  String parkDefaultValue,
 ) async {
-  List<Map<String, String>> keys =
-      await database.getParkings(parkId).then((values) {
+  List<Map<String, String>> keys = await database
+      .getAreaParkingKeys(areaDefaultValue, parkDefaultValue)
+      .then((values) {
     List<Map<String, String>> _keyIds = [];
     // print('values');
     // print(values);
     values.forEach((value) {
       Map<String, String> _keymap = {};
-      _keymap['bd_id'] = value.bdId;
-      _keymap['key_id'] = value.keyId;
+      _keymap['bd_id'] = value.blutoothId;
+      _keymap['key_id'] = value.id;
       _keymap['open_key'] = value.openKey;
       _keyIds.add(_keymap);
     });
@@ -201,6 +205,8 @@ Widget _buldContents(
   String keyName = '';
   List keyList = [];
   List<String> keyDeviceList = [];
+  final database = Provider.of<Database>(context);
+
   final areaParkingName = AreaParkingName();
 
   return SingleChildScrollView(
@@ -526,12 +532,22 @@ Widget _buldContents(
                 Navigator.of(context).push(
                   MaterialPageRoute(
                     builder: (context) {
-                      return PayOffComfirmPage(
-                        device: connectedDevice,
-                        openKey: openKey,
-                        keyId: selectedKey,
-                        areaDefaultValue: areaDefaultValue,
-                        parkDefaultValue: parkDefaultValue,
+                      // return PayOffComfirmPage(
+                      //   device: connectedDevice,
+                      //   openKey: openKey,
+                      //   keyId: selectedKey,
+                      //   areaDefaultValue: areaDefaultValue,
+                      //   parkDefaultValue: parkDefaultValue,
+                      // );
+                      return Provider<Database>.value(
+                        value: database,
+                        child: PayOffComfirmPage(
+                          device: connectedDevice,
+                          openKey: openKey,
+                          keyId: selectedKey,
+                          areaDefaultValue: areaDefaultValue,
+                          parkDefaultValue: parkDefaultValue,
+                        ),
                       );
                     },
                   ),

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_blue/flutter_blue.dart';
-import 'dart:convert';
 
 class ScanResultTile extends StatelessWidget {
   const ScanResultTile({Key key, this.result, this.onTap}) : super(key: key);
@@ -89,7 +88,6 @@ class ScanResultTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return ExpansionTile(
       title: _buildTitle(context),
-      // leading: Text(result.rssi.toString()),
       leading: Text(result.device.name.toString()),
       trailing: RaisedButton(
         child: Text('CONNECT'),
@@ -257,19 +255,17 @@ class CharacteristicTile extends StatelessWidget {
                     color: Theme.of(context).iconTheme.color.withRed(10)),
                 // onPressed: onWritePressed,
                 onPressed: () async {
-                  // const AsciiCodec ascii = AsciiCodec();
-
                   List<int> writeData = [];
-                  // 解錠コードをここで作成して送る！
-                  // var encoded = ascii.encode(openKey);
                   print('openKey');
                   print(openKey);
-                  String param1 = int.parse('0x${openKey.substring(0, 2)}')
-                      .toRadixString(16);
+                  // String param1 = int.parse('0x${openKey.substring(0, 2)}')
+                  //     .toRadixString(16);
+                  String param1 = openKey.substring(0, 2);
                   // String param2 = int.parse('0x${openKey.substring(2, 4)}')
                   //     .toRadixString(16);
-                  String param2 =
-                      int.parse('0x${openKey.substring(2)}').toRadixString(16);
+                  // String param2 =
+                  //     int.parse('0x${openKey.substring(2)}').toRadixString(16);
+                  String param2 = openKey.substring(2);
                   // String param3 = int.parse('0x${openKey.substring(4, 6)}')
                   //     .toRadixString(16);
                   // String param4 =
@@ -277,8 +273,6 @@ class CharacteristicTile extends StatelessWidget {
                   print('解錠データ');
                   print(int.parse('0x$param1'));
                   print(int.parse('0x$param2'));
-                  // print(int.parse('0x$param3'));
-                  // print(int.parse('0x$param4'));
 
                   // Hexで送る:30 -> 0
                   // 81 - 2C
@@ -287,6 +281,8 @@ class CharacteristicTile extends StatelessWidget {
                   writeData.add(0x41);
                   writeData.add(int.parse('0x$param1'));
                   writeData.add(int.parse('0x$param2'));
+                  // writeData.add(0x26);
+                  // writeData.add(0x3d);
                   writeData.add(0x51);
 
                   print(writeData);
