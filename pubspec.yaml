@@ -30,12 +30,12 @@ dependencies:
   # apple_sign_in: ^0.1.0
   provider: ^3.1.0+1
   cloud_firestore: ^0.12.9+5
-  rxdart: ^0.22.4
+  # rxdart: ^0.22.4
   carousel_slider: ^1.4.1
-  flutter_blue: ^0.6.3+1
+  flutter_blue: ^0.7.2
   pin_code_fields: ^2.3.0+3
 dependency_overrides:
-  firebase_core: 0.4.4
+  firebase_core: 0.4.5
 
 dev_dependencies:
   flutter_test:

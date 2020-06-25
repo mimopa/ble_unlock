@@ -22,11 +22,9 @@ class SignInPage extends StatelessWidget {
   static Widget create(BuildContext context) {
     final auth = Provider.of<AuthBase>(context);
     return ChangeNotifierProvider<ValueNotifier<bool>>(
-      // builder: (_) => ValueNotifier<bool>(false),
       create: (_) => ValueNotifier<bool>(false),
       child: Consumer<ValueNotifier<bool>>(
         builder: (_, isLoading, __) => Provider<SignInManager>(
-          // builder: (_) => SignInManager(auth: auth, isLoading: isLoading),
           create: (_) => SignInManager(auth: auth, isLoading: isLoading),
           child: Consumer<SignInManager>(
             builder: (context, manager, _) => SignInPage(
@@ -74,16 +72,6 @@ class SignInPage extends StatelessWidget {
     }
   }
 
-  // Future<void> _signInWithApple(BuildContext context) async {
-  //   try {
-  //     await manager.signInWithApple(scopes: [Scope.email, Scope.fullName]);
-  //   } on PlatformException catch (e) {
-  //     if (e.code != 'ERROR_ABORTED_BY_USER') {
-  //       _showSignInError(context, e);
-  //     }
-  //   }
-  // }
-
   void _signInWithEmail(BuildContext context) {
     Navigator.of(context).push(
       MaterialPageRoute<void>(
@@ -112,61 +100,63 @@ class SignInPage extends StatelessWidget {
     //     Provider.of<AppleSignInAvailable>(context, listen: false);
     return Padding(
       padding: EdgeInsets.all(30.0),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: <Widget>[
-          SizedBox(
-            height: 250.0,
-            child: _buildHeader(),
-          ),
-          SizedBox(height: 8.0),
-          SignInButton(
-            text: 'Sign in しない',
-            textColor: Colors.black,
-            color: Colors.amber[200],
-            onPressed: isLoading ? null : () => _signInAnonymously(context),
-          ),
-          SizedBox(height: 8.0),
-          Text(
-            'もしくは',
-            style: TextStyle(fontSize: 14.0, color: Colors.red),
-            textAlign: TextAlign.center,
-          ),
-          SizedBox(height: 10.0),
-          SocialSignInButton(
-            assetName: 'images/google-logo.png',
-            text: 'Sign in with Google',
-            textColor: Colors.black87,
-            color: Colors.white,
-            onPressed: isLoading ? null : () => _signInWithGoogle(context),
-          ),
-          SizedBox(height: 8.0),
-          SocialSignInButton(
-            assetName: 'images/facebook-logo.png',
-            text: 'Sign in with Facebook',
-            textColor: Colors.white,
-            color: Color(0xFF334D92),
-            onPressed: isLoading ? null : () => _signInWithFacebook(context),
-          ),
-          SizedBox(height: 8.0),
-          // if (appleSignInAvailable.isAvailable)
-          //   SocialSignInButton(
-          //     assetName: 'images/apple-logo.png',
-          //     text: 'Sign in with Apple',
-          //     textColor: Colors.white,
-          //     color: Colors.black,
-          //     onPressed: isLoading ? null : () => _signInWithApple(context),
-          //   ),
-          // if (appleSignInAvailable.isAvailable) SizedBox(height: 8.0),
-          SignInButton(
-            text: 'Sign in with email',
-            textColor: Colors.white,
-            color: Colors.teal,
-            onPressed: isLoading ? null : () => _signInWithEmail(context),
-          ),
-          SizedBox(height: 8.0),
-        ],
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: <Widget>[
+            SizedBox(
+              height: 190.0,
+              child: _buildHeader(),
+            ),
+            SizedBox(height: 8.0),
+            SignInButton(
+              text: 'Sign in しない',
+              textColor: Colors.black,
+              color: Colors.amber[200],
+              onPressed: isLoading ? null : () => _signInAnonymously(context),
+            ),
+            SizedBox(height: 8.0),
+            Text(
+              'もしくは',
+              style: TextStyle(fontSize: 14.0, color: Colors.red),
+              textAlign: TextAlign.center,
+            ),
+            SizedBox(height: 10.0),
+            SocialSignInButton(
+              assetName: 'images/google-logo.png',
+              text: 'Sign in with Google',
+              textColor: Colors.black87,
+              color: Colors.white,
+              onPressed: isLoading ? null : () => _signInWithGoogle(context),
+            ),
+            SizedBox(height: 8.0),
+            SocialSignInButton(
+              assetName: 'images/facebook-logo.png',
+              text: 'Sign in with Facebook',
+              textColor: Colors.white,
+              color: Color(0xFF334D92),
+              onPressed: isLoading ? null : () => _signInWithFacebook(context),
+            ),
+            SizedBox(height: 8.0),
+            // if (appleSignInAvailable.isAvailable)
+            //   SocialSignInButton(
+            //     assetName: 'images/apple-logo.png',
+            //     text: 'Sign in with Apple',
+            //     textColor: Colors.white,
+            //     color: Colors.black,
+            //     onPressed: isLoading ? null : () => _signInWithApple(context),
+            //   ),
+            // if (appleSignInAvailable.isAvailable) SizedBox(height: 8.0),
+            SignInButton(
+              text: 'Sign in with email',
+              textColor: Colors.white,
+              color: Colors.teal,
+              onPressed: isLoading ? null : () => _signInWithEmail(context),
+            ),
+            SizedBox(height: 8.0),
+          ],
+        ),
       ),
     );
   }
@@ -177,8 +167,8 @@ class SignInPage extends StatelessWidget {
       tag: 'tick',
       child: new Image.asset(
         'images/logo.png',
-        width: 200.0,
-        height: 200.0,
+        width: 160.0,
+        height: 160.0,
         scale: 1.0,
         colorBlendMode: BlendMode.modulate,
       ),
