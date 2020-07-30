@@ -7,7 +7,7 @@ import 'package:provider/provider.dart';
 class SignOutModule {
   Future<void> signOut(BuildContext context) async {
     try {
-      final auth = Provider.of<AuthBase>(context);
+      final auth = Provider.of<AuthBase>(context, listen: false);
       await auth.signOut();
       Navigator.of(context).push(
         MaterialPageRoute(

@@ -11,10 +11,8 @@ import 'package:provider/provider.dart';
 class MenuPage extends StatelessWidget {
   Future<void> _signOut(BuildContext context) async {
     try {
-      print('SignOut-S!');
       final auth = Provider.of<AuthBase>(context);
       await auth.signOut();
-      print('SignOut!');
       Navigator.of(context).push(
         MaterialPageRoute(
           builder: (context) {

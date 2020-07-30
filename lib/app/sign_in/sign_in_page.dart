@@ -106,7 +106,7 @@ class SignInPage extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
             SizedBox(
-              height: 190.0,
+              height: 210.0,
               child: _buildHeader(),
             ),
             SizedBox(height: 8.0),

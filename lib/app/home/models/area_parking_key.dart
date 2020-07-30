@@ -8,6 +8,8 @@ class AreaParkingKey {
     @required this.status,
     @required this.openKey,
     @required this.blutoothId,
+    @required this.iosBluetoothId,
+    @required this.androidBluetoothId,
     @required this.battery,
   });
   final String id; // Key Id
@@ -16,6 +18,8 @@ class AreaParkingKey {
   final String status;
   final String openKey;
   final String blutoothId;
+  final String iosBluetoothId;
+  final String androidBluetoothId;
   final String battery;
 
   factory AreaParkingKey.fromMap(Map<String, dynamic> data, String documentId) {
@@ -27,6 +31,8 @@ class AreaParkingKey {
     final String status = data['status'];
     final String openKey = data['open_key'];
     final String blutoothId = data['bd_id'];
+    final String iosBluetoothId = data['bd_id1'];
+    final String androidBluetoothId = data['bd_id2'];
     final String battery = data['battery'];
     return AreaParkingKey(
       id: documentId,
@@ -35,6 +41,8 @@ class AreaParkingKey {
       status: status,
       openKey: openKey,
       blutoothId: blutoothId,
+      iosBluetoothId: iosBluetoothId,
+      androidBluetoothId: androidBluetoothId,
       battery: battery,
     );
   }

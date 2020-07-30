@@ -1,4 +1,3 @@
-import 'package:ble_unlock/app/home/end_peyoff_page.dart';
 import 'package:ble_unlock/common_widgets/areaParkingName_widget.dart';
 import 'package:ble_unlock/common_widgets/platform_alert_dialog.dart';
 import 'package:ble_unlock/landing_page.dart';
@@ -9,6 +8,7 @@ import 'package:flutter_blue/flutter_blue.dart';
 import 'package:provider/provider.dart';
 
 import 'end_confirm_page.dart';
+import 'end_peyoff_page_statefull.dart';
 
 class PayOffComfirmPage extends StatelessWidget {
   const PayOffComfirmPage({
@@ -259,10 +259,6 @@ Widget _buldContents(
                         Navigator.of(context).push(
                           MaterialPageRoute(
                             builder: (context) {
-                              // return EndConfirmPage(
-                              //   areaDefaultValue: areaDefaultValue,
-                              //   parkDefaultValue: parkDefaultValue,
-                              // );
                               return Provider<Database>.value(
                                 value: database,
                                 child: EndConfirmPage(
@@ -334,16 +330,9 @@ Widget _buldContents(
                         Navigator.of(context).push(
                           MaterialPageRoute(
                             builder: (context) {
-                              // return EndPayOffPage(
-                              //   device: device,
-                              //   openKey: openKey,
-                              //   keyId: keyId,
-                              //   areaDefaultValue: areaDefaultValue,
-                              //   parkDefaultValue: parkDefaultValue,
-                              // );
                               return Provider<Database>.value(
                                 value: database,
-                                child: EndPayOffPage(
+                                child: EndPayOffPagesStatefull(
                                   device: device,
                                   openKey: openKey,
                                   keyId: keyId,

@@ -24,7 +24,6 @@ class _HomePageState extends State<HomePage> {
 
   // 駐輪機選択:key_id
   String _keyDefaultValue = '001';
-  // final List<String> _keyList = <String>['001', '002', '003', '004'];
 
   void _handleAreaChange(String value) {
     setState(() {
@@ -59,7 +58,7 @@ class _HomePageState extends State<HomePage> {
   void _passCodeChange(String newPassCode) {
     setState(() {
       currentPassCode = newPassCode;
-      print(currentPassCode);
+      // print(currentPassCode);
     });
   }
 
@@ -67,7 +66,7 @@ class _HomePageState extends State<HomePage> {
   void _passCodeConfirmChange(String newPassCode) {
     setState(() {
       currentConfirmPassCode = newPassCode;
-      print(currentConfirmPassCode);
+      // print(currentConfirmPassCode);
     });
   }
 
@@ -100,7 +99,6 @@ class _HomePageState extends State<HomePage> {
             _handleAreaChange,
             _handleParkChange,
             _keyDefaultValue,
-            // _keyList,
             currentPassCode,
             _handleChange,
             _handleKeyChange,
@@ -118,7 +116,6 @@ Widget _buldContents(
   Function handleAreaChange,
   Function handleParkChange,
   String keyDefaultValue,
-  // List<String> keyList,
   String currentPassCode,
   Function onChanged,
   Function handleKeyChange,

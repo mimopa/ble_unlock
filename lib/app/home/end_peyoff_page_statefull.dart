@@ -10,15 +10,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_blue/flutter_blue.dart';
 import 'package:provider/provider.dart';
 
-class EndPayOffPage extends StatelessWidget {
-  const EndPayOffPage({
-    Key key,
-    this.device,
-    this.openKey,
-    this.keyId,
-    this.areaDefaultValue,
-    this.parkDefaultValue,
-  }) : super(key: key);
+class EndPayOffPagesStatefull extends StatefulWidget {
+  EndPayOffPagesStatefull(
+      {Key key,
+      this.device,
+      this.openKey,
+      this.keyId,
+      this.areaDefaultValue,
+      this.parkDefaultValue})
+      : super(key: key);
 
   final BluetoothDevice device;
   final String openKey;
@@ -26,12 +26,37 @@ class EndPayOffPage extends StatelessWidget {
   final String areaDefaultValue;
   final String parkDefaultValue;
 
+  @override
+  _EndPayOffPagesStatefullState createState() =>
+      _EndPayOffPagesStatefullState();
+}
+
+class _EndPayOffPagesStatefullState extends State<EndPayOffPagesStatefull> {
+  List<BluetoothService> _services;
+  //  StreamControllerの指定
+  StreamController<List<BluetoothService>> _controller =
+      StreamController<List<BluetoothService>>.broadcast();
+
+  @override
+  void initState() {
+    super.initState();
+    print('_EndPayOffPagesStatefullState initState');
+    // _deviceConnect();
+  }
+
+  @override
+  void dispose() {
+    _controller.close();
+    super.dispose();
+  }
+
   Future<void> _signOut(BuildContext context) async {
     try {
-      final auth = Provider.of<AuthBase>(context);
+      print('_signOut');
+      final auth = Provider.of<AuthBase>(context, listen: false);
       await auth.signOut();
       // 接続したデバイスを切断する
-      await device.disconnect();
+      await widget.device.disconnect();
       Navigator.of(context).push(
         MaterialPageRoute(
           builder: (context) {
@@ -56,6 +81,7 @@ class EndPayOffPage extends StatelessWidget {
     }
   }
 
+  // 決済確認ダイアログ
   Future<void> _confirmCheckOut(BuildContext context) async {
     final didRequestCheckOut = await PlatformAlertDialog(
       title: 'お支払い',
@@ -65,21 +91,30 @@ class EndPayOffPage extends StatelessWidget {
     ).show(context);
     if (didRequestCheckOut == true) {
       try {
-        await device.connect();
+        // 決済完了後の動作
+        await _deviceConnect();
       } catch (e) {
         print(e);
       }
-      // Androidの場合、コネクトが出来ないっぽい
-      // 切断されたかどうかを、アプリで拾う
-      List<BluetoothService> services = await device.discoverServices();
-      services.forEach((service) {
-        print(service.characteristics);
-        List<BluetoothCharacteristic> characteristics = service.characteristics;
-        characteristics.forEach((characteristic) {
-          print(characteristic.serviceUuid);
-        });
-      });
-      // await _checkOut(context, device);
+    }
+  }
+
+  // connectとdiscoverServicesの実行
+  Future<void> _deviceConnect() async {
+    try {
+      print('deviceConnect-S!');
+      await widget.device.connect();
+      print('deviceConnect-E!');
+    } catch (e) {
+      print('connect Error');
+      if (e.code != 'already_connected') {
+        throw e;
+      }
+    } finally {
+      print('Discovered-S!');
+      _services = await widget.device.discoverServices();
+      _controller.add(_services);
+      print('Discovered-E!');
     }
   }
 
@@ -107,17 +142,8 @@ class EndPayOffPage extends StatelessWidget {
                     onWritePressed: () => c.write(_getRandomBytes()),
                     onNotificationPressed: () =>
                         c.setNotifyValue(!c.isNotifying),
-                    // descriptorTiles: c.descriptors
-                    //     .map(
-                    //       (d) => DescriptorTile(
-                    //         descriptor: d,
-                    //         onReadPressed: () => d.read(),
-                    //         onWritePressed: () => d.write(_getRandomBytes()),
-                    //       ),
-                    //     )
-                    //     .toList(),
-                    openKey: openKey,
-                    keyId: keyId,
+                    openKey: widget.openKey,
+                    keyId: widget.keyId,
                   ),
                 )
                 .toList(),
@@ -148,13 +174,14 @@ class EndPayOffPage extends StatelessWidget {
         backgroundColor: Colors.white,
         body: _buldContents(
           context,
-          device,
+          widget.device,
           _confirmCheckOut,
           _buildServiceTiles,
-          openKey,
-          keyId,
-          areaDefaultValue,
-          parkDefaultValue,
+          widget.openKey,
+          widget.keyId,
+          widget.areaDefaultValue,
+          widget.parkDefaultValue,
+          _controller,
         ),
       ),
     );
@@ -170,6 +197,7 @@ Widget _buldContents(
   String keyId,
   String areaDefaultValue,
   String parkDefaultValue,
+  StreamController<List<BluetoothService>> controller,
 ) {
   final areaParkingName = AreaParkingName();
 
@@ -397,14 +425,14 @@ Widget _buldContents(
               ],
             ),
           ),
+          // 決済完了状態を監視して、完了した場合に表示する様に修正する。
           Container(
             width: double.infinity,
-            // TODO:Androidだとリスト表示時にnullエラーになる。
-            // confirmCheckOutが完了したらビルドされるように変更するか検討。
             child: Column(
               children: <Widget>[
                 StreamBuilder<List<BluetoothService>>(
-                  stream: device.services,
+                  // stream: device.services,
+                  stream: controller.stream,
                   initialData: [],
                   builder: (c, snapshot) {
                     if (snapshot.data != null) {
@@ -412,7 +440,8 @@ Widget _buldContents(
                         children: _buildServiceTiles(snapshot.data),
                       );
                     } else {
-                      return null;
+                      // return null;
+                      return Text('device not found');
                     }
                   },
                 ),

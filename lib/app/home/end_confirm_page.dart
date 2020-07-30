@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:ble_unlock/app/home/payoff_comfirm_page.dart';
 import 'package:ble_unlock/app/sign_in/sign_out.dart';
@@ -37,7 +38,6 @@ class _EndConfirmPageState extends State<EndConfirmPage> {
 
   void _handleKeyChange(String newKeyValue) {
     setState(() {
-      // _text = newValue;
       _defaultValue = newKeyValue;
     });
   }
@@ -46,8 +46,8 @@ class _EndConfirmPageState extends State<EndConfirmPage> {
   void _changeDevices(
       BluetoothDevice device, List<Map<String, String>> keyIds) {
     setState(() {
+      // 選択したデバイスのdeviceIDをもとに、データベースから駐輪機Noと開錠コードを取得する。
       _connectedDevice = device;
-      // _keyId = keyId;
       keyIds.asMap().forEach((index, keymap) {
         if (keymap.values.toList().indexOf(device.id.toString()) >= 0) {
           if (device.id.toString() == keymap['bd_id']) {
@@ -74,12 +74,8 @@ class _EndConfirmPageState extends State<EndConfirmPage> {
 
   Future _setKeys(Database database) async {
     // データベース（駐輪機マスタ）から、設定情報を取得する。
-    // BDIDと駐輪機IDのリストを取得しておく？
-    // _keyIds = await _getKeys(database, '001');
     _keyIds = await _getAreaParkingKeys(
         database, widget.areaDefaultValue, widget.parkDefaultValue);
-    // print('_setKeys');
-    // print(_keyIds);
     _controller.add(_keyIds);
   }
 
@@ -144,28 +140,6 @@ class _EndConfirmPageState extends State<EndConfirmPage> {
   }
 }
 
-// /parking/で駐輪キー一覧を取得するメソッド
-Future<List<Map<String, String>>> _getKeys(
-  Database database,
-  String parkId,
-) async {
-  List<Map<String, String>> keys =
-      await database.getParkings(parkId).then((values) {
-    List<Map<String, String>> _keyIds = [];
-    // print('values');
-    // print(values);
-    values.forEach((value) {
-      Map<String, String> _keymap = {};
-      _keymap['bd_id'] = value.bdId;
-      _keymap['key_id'] = value.keyId;
-      _keymap['open_key'] = value.openKey;
-      _keyIds.add(_keymap);
-    });
-    return _keyIds;
-  });
-  return keys;
-}
-
 // areaコード、Parkingコードから駐輪キー一覧を取得するメソッド
 Future<List<Map<String, String>>> _getAreaParkingKeys(
   Database database,
@@ -176,11 +150,16 @@ Future<List<Map<String, String>>> _getAreaParkingKeys(
       .getAreaParkingKeys(areaDefaultValue, parkDefaultValue)
       .then((values) {
     List<Map<String, String>> _keyIds = [];
-    // print('values');
-    // print(values);
     values.forEach((value) {
       Map<String, String> _keymap = {};
-      _keymap['bd_id'] = value.blutoothId;
+      if (Platform.isIOS) {
+        _keymap['bd_id'] = value.iosBluetoothId;
+      } else if (Platform.isAndroid) {
+        _keymap['bd_id'] = value.androidBluetoothId;
+      } else {
+        // OS不明な場合。。。
+        _keymap['bd_id'] = value.blutoothId;
+      }
       _keymap['key_id'] = value.id;
       _keymap['open_key'] = value.openKey;
       _keyIds.add(_keymap);
@@ -297,12 +276,13 @@ Widget _buldContents(
                                             .add(r.device.id.toString());
                                       }
                                     });
-                                    // デバイスのIDを確認するため
+                                    // デバイスのIDを確認するためのログ出力
                                     print(r.device.name);
                                     print(r.device.id.id);
                                     if (r.device.name == 'REL-BLE') {
                                       print('REL-BLE!!!');
                                       print(r.device.id.id);
+                                      print(r.device.id);
                                       print(r.device.name);
                                     }
                                     return DropdownMenuItem<BluetoothDevice>(
@@ -529,18 +509,19 @@ Widget _buldContents(
                 ).show(context);
               } else {
                 // 決済画面へ
+                // ここでデバイスとのコネクションをはるか。
                 Navigator.of(context).push(
                   MaterialPageRoute(
                     builder: (context) {
-                      // return PayOffComfirmPage(
-                      //   device: connectedDevice,
-                      //   openKey: openKey,
-                      //   keyId: selectedKey,
-                      //   areaDefaultValue: areaDefaultValue,
-                      //   parkDefaultValue: parkDefaultValue,
-                      // );
                       return Provider<Database>.value(
                         value: database,
+                        // child: EndPayOffPagesStatefull(
+                        //   device: connectedDevice,
+                        //   openKey: openKey,
+                        //   keyId: selectedKey,
+                        //   areaDefaultValue: areaDefaultValue,
+                        //   parkDefaultValue: parkDefaultValue,
+                        // ),
                         child: PayOffComfirmPage(
                           device: connectedDevice,
                           openKey: openKey,
