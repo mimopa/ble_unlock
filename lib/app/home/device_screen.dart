@@ -18,7 +18,6 @@ class ServiceTile extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
             Text('Service'),
-            // TODO:明示的にコネクト、ディスコネクトするボタンを付けてみる。
             Text(service.uuid.toString(),
                 style: Theme.of(context)
                     .textTheme
@@ -61,7 +60,6 @@ class CharacteristicTile extends StatelessWidget {
     return StreamBuilder<List<int>>(
       // デバイスとの送受信データ（変更があればStreamに流れてくる）
       // 受信データは<List<int>>
-      // 支払い後のBLEデータ送受信UIを変更するならば、ここ
       stream: characteristic.value,
       initialData: characteristic.lastValue,
       builder: (c, snapshot) {
@@ -95,46 +93,45 @@ class CharacteristicTile extends StatelessWidget {
           trailing: Row(
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
-              // Read用のボタン
-              // Readいらないので、解錠コード作成ボタンにする
-              // ATE用のボタン
-              IconButton(
-                icon: Icon(
-                  Icons.vpn_key,
-                  color: Theme.of(context).iconTheme.color.withRed(10),
-                ),
-                // onPressed: onReadPressed,
-                onPressed: () async {
-                  // 「ATE」(テスト用コマンド)を送信して鍵生成
-                  // A:0x41,T:0x54,E:0x45
-                  List<int> writeData = [];
-                  writeData.add(0x41);
-                  writeData.add(0x54);
-                  writeData.add(0x45);
-                  print('ATE');
-                  print(writeData);
-                  await characteristic.write(writeData, withoutResponse: false);
-                },
-              ),
-              // ATK用のボタン
-              IconButton(
-                icon: Icon(
-                  Icons.vpn_key,
-                  color: Theme.of(context).iconTheme.color.withRed(10),
-                ),
-                // onPressed: onReadPressed,
-                onPressed: () async {
-                  // 「ATK」(テスト用コマンド)を送信して鍵受け取り
-                  // A:0x41,T:0x54,K:0x4b
-                  List<int> writeData = [];
-                  writeData.add(0x41);
-                  writeData.add(0x54);
-                  writeData.add(0x4B);
-                  print('ATK');
-                  print(writeData);
-                  await characteristic.write(writeData, withoutResponse: false);
-                },
-              ),
+              // 鍵の作成と取得（LoRaなしでのデバック用途）はRENESASの公開アプリでやる
+              // // ATE用のボタン
+              // IconButton(
+              //   icon: Icon(
+              //     Icons.vpn_key,
+              //     color: Theme.of(context).iconTheme.color.withRed(10),
+              //   ),
+              //   // onPressed: onReadPressed,
+              //   onPressed: () async {
+              //     // 「ATE」(テスト用コマンド)を送信して鍵生成
+              //     // A:0x41,T:0x54,E:0x45
+              //     List<int> writeData = [];
+              //     writeData.add(0x41);
+              //     writeData.add(0x54);
+              //     writeData.add(0x45);
+              //     print('ATE');
+              //     print(writeData);
+              //     await characteristic.write(writeData, withoutResponse: false);
+              //   },
+              // ),
+              // // ATK用のボタン
+              // IconButton(
+              //   icon: Icon(
+              //     Icons.vpn_key,
+              //     color: Theme.of(context).iconTheme.color.withRed(10),
+              //   ),
+              //   // onPressed: onReadPressed,
+              //   onPressed: () async {
+              //     // 「ATK」(テスト用コマンド)を送信して鍵受け取り
+              //     // A:0x41,T:0x54,K:0x4b
+              //     List<int> writeData = [];
+              //     writeData.add(0x41);
+              //     writeData.add(0x54);
+              //     writeData.add(0x4B);
+              //     print('ATK');
+              //     print(writeData);
+              //     await characteristic.write(writeData, withoutResponse: false);
+              //   },
+              // ),
               // 書き込み用のボタン
               IconButton(
                 icon: Icon(Icons.lock_open,
@@ -142,33 +139,16 @@ class CharacteristicTile extends StatelessWidget {
                 // onPressed: onWritePressed,
                 onPressed: () async {
                   List<int> writeData = [];
-                  print('openKey');
-                  print(openKey);
-                  // String param1 = int.parse('0x${openKey.substring(0, 2)}')
-                  //     .toRadixString(16);
                   String param1 = openKey.substring(0, 2);
-                  // String param2 = int.parse('0x${openKey.substring(2, 4)}')
-                  //     .toRadixString(16);
-                  // String param2 =
-                  //     int.parse('0x${openKey.substring(2)}').toRadixString(16);
                   String param2 = openKey.substring(2);
-                  // String param3 = int.parse('0x${openKey.substring(4, 6)}')
-                  //     .toRadixString(16);
-                  // String param4 =
-                  //     int.parse('0x${openKey.substring(6)}').toRadixString(16);
                   print('解錠データ');
                   print(int.parse('0x$param1'));
                   print(int.parse('0x$param2'));
 
-                  // Hexで送る:30 -> 0
-                  // 81 - 2C
-                  // 41 04 04 04 04 04 04 51
                   // 0x41:Start,0x51:End これは固定
                   writeData.add(0x41);
                   writeData.add(int.parse('0x$param1'));
                   writeData.add(int.parse('0x$param2'));
-                  // writeData.add(0x26);
-                  // writeData.add(0x3d);
                   writeData.add(0x51);
 
                   print(writeData);
@@ -182,14 +162,12 @@ class CharacteristicTile extends StatelessWidget {
                         ? Icons.sync_disabled
                         : Icons.sync,
                     color: Theme.of(context).iconTheme.color.withRed(10)),
-                // Notifyを独自メソッドに変更してみる
                 // onPressed: onNotificationPressed,
                 onPressed: () async {
                   characteristic.setNotifyValue(!characteristic.isNotifying);
                   characteristic.value.listen((value) {
                     print('notify value');
                     print(value);
-                    // _controller.add(value);
                   });
                 },
               )

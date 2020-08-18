@@ -32,7 +32,6 @@ class _EndConfirmPageState extends State<EndConfirmPage> {
       StreamController<List<Map<String, String>>>.broadcast();
 
   void _deviceScan() {
-    // FlutterBlue.instance.stopScan();
     FlutterBlue.instance.startScan(timeout: Duration(seconds: 4));
   }
 
@@ -259,7 +258,10 @@ Widget _buldContents(
                             initialData: [],
                             builder: (c, snapshot) =>
                                 DropdownButton<BluetoothDevice>(
-                              value: null,
+                              // value: null,
+                              value: snapshot.data.isNotEmpty
+                                  ? connectedDevice
+                                  : null,
                               onChanged: (BluetoothDevice device) {
                                 changeDevices(device, keyIds);
                               },
@@ -276,19 +278,19 @@ Widget _buldContents(
                                             .add(r.device.id.toString());
                                       }
                                     });
+                                    // toSet()で重複排除してListへ変換
+                                    print(keyList.toSet().toList());
+                                    print(keyDeviceList.toSet().toList());
+                                    print(keyName);
                                     // デバイスのIDを確認するためのログ出力
-                                    print(r.device.name);
-                                    print(r.device.id.id);
                                     if (r.device.name == 'REL-BLE') {
                                       print('REL-BLE!!!');
-                                      print(r.device.id.id);
-                                      print(r.device.id);
-                                      print(r.device.name);
                                     }
+                                    print(r.device.name);
+                                    print(r.device.id.id);
                                     return DropdownMenuItem<BluetoothDevice>(
                                       value: r.device,
                                       child: Text(
-                                        // r.device.name,
                                         keyName,
                                         style: TextStyle(
                                           backgroundColor:
@@ -316,7 +318,6 @@ Widget _buldContents(
                           ),
                         );
                       }
-                      // return Text('OFF');
                       return DropdownButton<String>(
                         value: null,
                         onChanged: handleKeyChange,
@@ -509,19 +510,11 @@ Widget _buldContents(
                 ).show(context);
               } else {
                 // 決済画面へ
-                // ここでデバイスとのコネクションをはるか。
                 Navigator.of(context).push(
                   MaterialPageRoute(
                     builder: (context) {
                       return Provider<Database>.value(
                         value: database,
-                        // child: EndPayOffPagesStatefull(
-                        //   device: connectedDevice,
-                        //   openKey: openKey,
-                        //   keyId: selectedKey,
-                        //   areaDefaultValue: areaDefaultValue,
-                        //   parkDefaultValue: parkDefaultValue,
-                        // ),
                         child: PayOffComfirmPage(
                           device: connectedDevice,
                           openKey: openKey,
