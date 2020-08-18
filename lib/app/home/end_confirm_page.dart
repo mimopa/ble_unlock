@@ -278,10 +278,6 @@ Widget _buldContents(
                                             .add(r.device.id.toString());
                                       }
                                     });
-                                    // toSet()で重複排除してListへ変換
-                                    print(keyList.toSet().toList());
-                                    print(keyDeviceList.toSet().toList());
-                                    print(keyName);
                                     // デバイスのIDを確認するためのログ出力
                                     if (r.device.name == 'REL-BLE') {
                                       print('REL-BLE!!!');
