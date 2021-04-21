@@ -35,9 +35,41 @@ class StartConfirmPage extends StatelessWidget {
       if (entry != null) {
         // 既にエントリー済み
         // print('エントリー済！');
+        // showDialog(
+        //   context: context,
+        //   child: CupertinoAlertDialog(
+        //     title: Column(
+        //       children: <Widget>[
+        //         Text(
+        //           "現在ご利用になれません。",
+        //           style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+        //         ),
+        //         Icon(
+        //           Icons.info,
+        //           color: Colors.red,
+        //         ),
+        //       ],
+        //     ),
+        //     content: new Text("ご利用中の駐輪機を確認してください。"),
+        //     actions: <Widget>[
+        //       FlatButton(
+        //         onPressed: () {
+        //           Navigator.of(context).push(
+        //             MaterialPageRoute(
+        //               builder: (context) {
+        //                 return LandingPage();
+        //               },
+        //             ),
+        //           );
+        //         },
+        //         child: new Text("OK"),
+        //       ),
+        //     ],
+        //   ),
+        // );
         showDialog(
           context: context,
-          child: CupertinoAlertDialog(
+          builder: (BuildContext context) => CupertinoAlertDialog(
             title: Column(
               children: <Widget>[
                 Text(
@@ -52,7 +84,7 @@ class StartConfirmPage extends StatelessWidget {
             ),
             content: new Text("ご利用中の駐輪機を確認してください。"),
             actions: <Widget>[
-              FlatButton(
+              TextButton(
                 onPressed: () {
                   Navigator.of(context).push(
                     MaterialPageRoute(
@@ -75,9 +107,41 @@ class StartConfirmPage extends StatelessWidget {
         );
         // エントリーデータ登録
         await database.setEntry(entry);
+        // showDialog(
+        //   context: context,
+        //   child: CupertinoAlertDialog(
+        //     title: Column(
+        //       children: <Widget>[
+        //         Text(
+        //           "ご利用ありがとうございます！",
+        //           style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+        //         ),
+        //         Icon(
+        //           Icons.favorite,
+        //           color: Colors.red,
+        //         ),
+        //       ],
+        //     ),
+        //     content: new Text("利用を開始しました。"),
+        //     actions: <Widget>[
+        //       FlatButton(
+        //         onPressed: () {
+        //           Navigator.of(context).push(
+        //             MaterialPageRoute(
+        //               builder: (context) {
+        //                 return LandingPage();
+        //               },
+        //             ),
+        //           );
+        //         },
+        //         child: new Text("OK"),
+        //       ),
+        //     ],
+        //   ),
+        // );
         showDialog(
           context: context,
-          child: CupertinoAlertDialog(
+          builder: (BuildContext context) => CupertinoAlertDialog(
             title: Column(
               children: <Widget>[
                 Text(
@@ -92,7 +156,7 @@ class StartConfirmPage extends StatelessWidget {
             ),
             content: new Text("利用を開始しました。"),
             actions: <Widget>[
-              FlatButton(
+              TextButton(
                 onPressed: () {
                   Navigator.of(context).push(
                     MaterialPageRoute(
